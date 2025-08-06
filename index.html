@@ -189,6 +189,35 @@
             transform: translateY(-1px);
         }
 
+        /* Mobile-specific wallet button */
+        @media (max-width: 768px) {
+            .wallet-connect-btn {
+                padding: 10px 14px;
+                font-size: 13px;
+                margin-right: 8px;
+            }
+            
+            .wallet-btn-text::after {
+                content: ' 🔗';
+            }
+            
+            .wallet-info {
+                padding: 8px 10px;
+                font-size: 11px;
+                margin-right: 8px;
+            }
+            
+            .navbar-right {
+                gap: 8px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .wallet-btn-text {
+                font-size: 12px;
+            }
+        }
+
         .wallet-info {
             display: flex;
             align-items: center;
@@ -1005,7 +1034,7 @@
             
             <div class="navbar-right">
                 <button class="wallet-connect-btn" id="walletConnectBtn" style="display: block;">
-                    Connect Wallet
+                    <span class="wallet-btn-text">Connect Wallet</span>
                 </button>
                                 <div class="wallet-info" id="walletInfo" style="display: none;">
                     <span class="wallet-address" id="walletAddress"></span>
@@ -1308,28 +1337,121 @@
             console.error('❌ All RPC endpoints failed!');
         }
 
-        // Connect wallet
+        // Mobile device detection
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        // Available wallet providers
+        function getAvailableWallets() {
+            const wallets = [];
+            
+            // Check for Phantom
+            if (typeof window.solana !== 'undefined' && window.solana.isPhantom) {
+                wallets.push({ name: 'Phantom', provider: window.solana });
+            }
+            
+            // Check for Solflare
+            if (typeof window.solflare !== 'undefined') {
+                wallets.push({ name: 'Solflare', provider: window.solflare });
+            }
+            
+            // Check for Coinbase
+            if (typeof window.coinbaseSolana !== 'undefined') {
+                wallets.push({ name: 'Coinbase Wallet', provider: window.coinbaseSolana });
+            }
+            
+            // Check for Trust Wallet
+            if (typeof window.trustWallet !== 'undefined' && window.trustWallet.solana) {
+                wallets.push({ name: 'Trust Wallet', provider: window.trustWallet.solana });
+            }
+            
+            // Check for generic solana provider
+            if (typeof window.solana !== 'undefined' && !window.solana.isPhantom) {
+                wallets.push({ name: 'Solana Wallet', provider: window.solana });
+            }
+            
+            return wallets;
+        }
+
+        // Connect wallet (mobile-friendly)
         async function connectWallet() {
             try {
-                if (typeof window.solana !== 'undefined' && window.solana.isPhantom) {
-                    const response = await window.solana.connect();
-                    wallet = response.publicKey.toString();
-                    
-                    // Update UI
-                    document.getElementById('walletConnectBtn').style.display = 'none';
-                    document.getElementById('walletInfo').style.display = 'flex';
-                    document.getElementById('walletAddress').textContent = `${wallet.slice(0, 4)}...${wallet.slice(-4)}`;
-                    
-                    // Check Launchium balance
-                    await checkLaunchiumBalance();
-                    
-                    console.log('Wallet connected:', wallet);
-                } else {
-                    alert('Please install Phantom wallet!');
+                const availableWallets = getAvailableWallets();
+                
+                if (availableWallets.length === 0) {
+                    // No wallet detected
+                    if (isMobile()) {
+                        const userAgent = navigator.userAgent.toLowerCase();
+                        let walletUrl = '';
+                        
+                        if (userAgent.includes('android')) {
+                            // Android deep links
+                            walletUrl = 'https://phantom.app/ul/browse/' + encodeURIComponent(window.location.href) + '?ref=launchium';
+                        } else if (userAgent.includes('iphone') || userAgent.includes('ipad')) {
+                            // iOS deep links
+                            walletUrl = 'https://phantom.app/ul/browse/' + encodeURIComponent(window.location.href) + '?ref=launchium';
+                        } else {
+                            walletUrl = 'https://phantom.app/download';
+                        }
+                        
+                        const userChoice = confirm(
+                            'Mobil cüzdan algılanamadı!\n\n' +
+                            'Phantom wallet uygulamasını indirip, uygulamadan bu siteyi açmanız gerekiyor.\n\n' +
+                            'Phantom\'a yönlendirilmek istiyor musunuz?'
+                        );
+                        
+                        if (userChoice) {
+                            window.open(walletUrl, '_blank');
+                        }
+                        return;
+                    } else {
+                        // Desktop - suggest extension
+                        const userChoice = confirm(
+                            'Solana cüzdanı algılanamadı!\n\n' +
+                            'Phantom browser extension\'ını yüklemeniz gerekiyor.\n\n' +
+                            'Phantom\'a yönlendirilmek istiyor musunuz?'
+                        );
+                        
+                        if (userChoice) {
+                            window.open('https://phantom.app/download', '_blank');
+                        }
+                        return;
+                    }
                 }
+                
+                // Use the first available wallet
+                const selectedWallet = availableWallets[0];
+                console.log(`Connecting to ${selectedWallet.name}...`);
+                
+                const response = await selectedWallet.provider.connect();
+                wallet = response.publicKey.toString();
+                
+                // Update UI
+                document.getElementById('walletConnectBtn').style.display = 'none';
+                document.getElementById('walletInfo').style.display = 'flex';
+                document.getElementById('walletAddress').textContent = `${wallet.slice(0, 4)}...${wallet.slice(-4)}`;
+                
+                // Check Launchium balance
+                await checkLaunchiumBalance();
+                
+                console.log(`${selectedWallet.name} connected:`, wallet);
+                
+                // Show success message
+                if (isMobile()) {
+                    alert(`${selectedWallet.name} başarıyla bağlandı!`);
+                }
+                
             } catch (error) {
                 console.error('Failed to connect wallet:', error);
-                alert('Failed to connect wallet. Please try again.');
+                
+                if (error.message?.includes('User rejected')) {
+                    alert('Cüzdan bağlantısı kullanıcı tarafından iptal edildi.');
+                } else if (isMobile()) {
+                    alert('Mobil cüzdan bağlantısı başarısız. Lütfen wallet uygulamasından siteyi açmayı deneyin.');
+                } else {
+                    alert('Cüzdan bağlantısı başarısız. Lütfen tekrar deneyin.');
+                }
             }
         }
 
