@@ -998,8 +998,8 @@
         <!-- Navbar -->
         <nav class="navbar">
             <div class="navbar-left">
-                <img src="/lnchmtransparent.png" alt="Launchium" class="navbar-logo-img" id="navbarLogoImg">
-                <div class="navbar-logo" style="display: none;" id="navbarLogoFallback">🚀</div>
+                <img src="/lnchmtransparent.png" alt="Launchium" class="navbar-logo-img" id="navbarLogoImg" style="display: none;">
+                <div class="navbar-logo" style="display: flex;" id="navbarLogoFallback">🚀</div>
                 <a href="#" class="navbar-brand">Launchium</a>
             </div>
             
@@ -1612,10 +1612,16 @@
             const navbarLogoImg = document.getElementById('navbarLogoImg');
             const navbarLogoFallback = document.getElementById('navbarLogoFallback');
             if (navbarLogoImg) {
+                navbarLogoImg.addEventListener('load', function() {
+                    this.style.display = 'block';
+                    if (navbarLogoFallback) navbarLogoFallback.style.display = 'none';
+                });
                 navbarLogoImg.addEventListener('error', function() {
                     this.style.display = 'none';
                     if (navbarLogoFallback) navbarLogoFallback.style.display = 'flex';
                 });
+                // Try to load the image
+                navbarLogoImg.src = navbarLogoImg.src;
             }
         });
 
