@@ -33,6 +33,7 @@ const corsOptions = {
             'http://localhost:3001',
             'http://127.0.0.1:3001',
             'https://launchium.app',
+            'https://token.launchium.app', // Production Vercel domain
             'https://your-frontend.vercel.app', // Will be updated with actual Vercel URL
             // Add your custom domain here if you have one
             ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [])
