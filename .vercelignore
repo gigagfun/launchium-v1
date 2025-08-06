@@ -1,12 +1,11 @@
-# Backend files - Vercel should ignore these
+# Backend files - Vercel should completely ignore these
 server.js
 create-token.js
 Procfile
-package.backend.json
 .railway/
 .railway*
 
-# Node.js backend dependencies
+# Node.js backend stuff
 node_modules/
 package-lock.json
 
@@ -20,3 +19,6 @@ package-lock.json
 
 # Database/keys
 token-*.json
+
+# Railway specific
+.railwayignore
