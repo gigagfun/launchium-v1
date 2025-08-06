@@ -1,0 +1,12 @@
+# Frontend-only files - Railway should ignore these
+vercel.json
+.vercel/
+.vercel*
+
+# Development files
+.DS_Store
+*.log
+
+# Temporary build files
+tmp/
+temp/

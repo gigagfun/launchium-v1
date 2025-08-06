@@ -1,0 +1,22 @@
+# Backend files - Vercel should ignore these
+server.js
+create-token.js
+Procfile
+package.backend.json
+.railway/
+.railway*
+
+# Node.js backend dependencies
+node_modules/
+package-lock.json
+
+# Environment files
+.env
+.env.*
+
+# Development files
+*.log
+.DS_Store
+
+# Database/keys
+token-*.json
