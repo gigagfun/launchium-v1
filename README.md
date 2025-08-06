@@ -1,18 +1,18 @@
-# 🚀 Launchium Token Creator
+# Launchium Token Creator
 
 A professional Solana token creation platform with wallet integration and access control.
 
-## ✨ Features
+## Features
 
-- 🔐 **Wallet Integration**: Phantom wallet connection
-- 💰 **Access Control**: Requires 2M+ LAUNCHIUM tokens
-- 🎨 **Modern UI**: Dark/light mode with orange-yellow gradient theme
-- 📱 **Responsive Design**: Works on all devices
-- 🔒 **Sponsored Transactions**: Free token creation for eligible users
-- 🏷️ **IPFS Metadata**: Automatic logo and metadata upload
-- 🔧 **Token-2022**: Latest Solana token standard
+- **Wallet Integration**: Phantom wallet connection
+- **Access Control**: Requires 2M+ LAUNCHIUM tokens
+- **Modern UI**: Dark/light mode with orange-yellow gradient theme
+- **Responsive Design**: Works on all devices
+- **Sponsored Transactions**: Free token creation for eligible users
+- **IPFS Metadata**: Automatic logo and metadata upload
+- **Token-2022**: Latest Solana token standard
 
-## 🏗️ Architecture
+## Architecture
 
 ### Frontend (Vercel)
 - **Static Site**: HTML, CSS, JavaScript
@@ -25,7 +25,7 @@ A professional Solana token creation platform with wallet integration and access
 - **Sponsored Wallet**: Server-side transaction signing
 - **Rate Limiting**: Built-in API protection
 
-## 🚀 Deployment
+## Deployment
 
 ### Prerequisites
 
@@ -74,7 +74,7 @@ NODE_ENV=production
 2. Update `index.html` API_URL with Railway URL
 3. Redeploy both services
 
-## 🔧 Local Development
+## Local Development
 
 ```bash
 # Install dependencies
@@ -91,7 +91,7 @@ npm run dev
 http://localhost:3001
 ```
 
-## 📋 API Endpoints
+## API Endpoints
 
 ### POST /create-token
 Creates a new Solana token with provided metadata.
@@ -121,7 +121,7 @@ Creates a new Solana token with provided metadata.
 ### GET /health
 Health check endpoint for monitoring.
 
-## 🔐 Security Features
+## Security Features
 
 - **CORS Protection**: Whitelist allowed origins
 - **Rate Limiting**: Prevent API abuse
@@ -129,7 +129,7 @@ Health check endpoint for monitoring.
 - **Wallet Verification**: On-chain balance verification
 - **CSP Headers**: Content Security Policy protection
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend**: HTML5, CSS3, JavaScript ES6+
 - **Backend**: Node.js, Express.js
@@ -138,21 +138,21 @@ Health check endpoint for monitoring.
 - **Hosting**: Vercel (Frontend) + Railway (Backend)
 - **Wallet**: Phantom Wallet Integration
 
-## 📄 License
+## License
 
 MIT License - see LICENSE file for details.
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
 4. Submit a pull request
 
-## 📞 Support
+## Support
 
 For support and questions, please open an issue on GitHub.
 
 ---
 
-**Created with ❤️ by Launchium Team**
+**Created by Launchium Team**

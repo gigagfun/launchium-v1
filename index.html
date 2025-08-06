@@ -128,7 +128,7 @@
             filter: drop-shadow(0 0 8px rgba(255, 107, 53, 0.3));
         }
 
-        .navbar-logo {
+        .navbar-logo-text {
             height: 32px;
             width: 32px;
             background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
@@ -198,7 +198,7 @@
             }
             
             .wallet-btn-text::after {
-                content: ' 🔗';
+                content: '';
             }
             
             .wallet-info {
@@ -1012,7 +1012,7 @@
                 padding: 12px 0;
             }
             .navbar-logo-img,
-            .navbar-logo {
+            .navbar-logo-text {
                 height: 28px;
                 width: 28px;
                 font-size: 16px;
@@ -1027,8 +1027,8 @@
         <!-- Navbar -->
         <nav class="navbar">
             <div class="navbar-left">
-                <img src="/lnchmtransparent.png" alt="Launchium" class="navbar-logo-img" id="navbarLogoImg" style="display: none;">
-                <div class="navbar-logo" style="display: flex;" id="navbarLogoFallback">🚀</div>
+                <img src="/lnchmtransparent.png" alt="Launchium" class="navbar-logo-img" id="navbarLogoImg">
+                <div class="navbar-logo-text" style="display: none;" id="navbarLogoFallback">L</div>
                 <a href="#" class="navbar-brand">Launchium</a>
             </div>
             
@@ -1396,9 +1396,9 @@
                         }
                         
                         const userChoice = confirm(
-                            'Mobil cüzdan algılanamadı!\n\n' +
-                            'Phantom wallet uygulamasını indirip, uygulamadan bu siteyi açmanız gerekiyor.\n\n' +
-                            'Phantom\'a yönlendirilmek istiyor musunuz?'
+                            'Mobile wallet not detected!\n\n' +
+                            'You need to install the Phantom wallet app and open this site from within the app.\n\n' +
+                            'Would you like to be redirected to Phantom?'
                         );
                         
                         if (userChoice) {
@@ -1408,9 +1408,9 @@
                     } else {
                         // Desktop - suggest extension
                         const userChoice = confirm(
-                            'Solana cüzdanı algılanamadı!\n\n' +
-                            'Phantom browser extension\'ını yüklemeniz gerekiyor.\n\n' +
-                            'Phantom\'a yönlendirilmek istiyor musunuz?'
+                            'Solana wallet not detected!\n\n' +
+                            'You need to install the Phantom browser extension.\n\n' +
+                            'Would you like to be redirected to Phantom?'
                         );
                         
                         if (userChoice) {
@@ -1439,18 +1439,18 @@
                 
                 // Show success message
                 if (isMobile()) {
-                    alert(`${selectedWallet.name} başarıyla bağlandı!`);
+                    alert(`${selectedWallet.name} connected successfully!`);
                 }
                 
             } catch (error) {
                 console.error('Failed to connect wallet:', error);
                 
                 if (error.message?.includes('User rejected')) {
-                    alert('Cüzdan bağlantısı kullanıcı tarafından iptal edildi.');
+                    alert('Wallet connection was cancelled by the user.');
                 } else if (isMobile()) {
-                    alert('Mobil cüzdan bağlantısı başarısız. Lütfen wallet uygulamasından siteyi açmayı deneyin.');
+                    alert('Mobile wallet connection failed. Please try opening the site from within your wallet app.');
                 } else {
-                    alert('Cüzdan bağlantısı başarısız. Lütfen tekrar deneyin.');
+                    alert('Wallet connection failed. Please try again.');
                 }
             }
         }
