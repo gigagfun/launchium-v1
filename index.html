@@ -1,0 +1,1935 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Launchium - Launch a Token with a Tweet</title>
+    <style>
+        :root {
+            --primary-orange: #FF6B35;
+            --secondary-orange: #FF8C42;
+            --accent-yellow: #FFD700;
+            --gradient-start: #FF6B35;
+            --gradient-end: #FFD700;
+            --bg-dark: #0D0D0D;
+            --bg-card: #1A1A1A;
+            --bg-lighter: #262626;
+            --text-light: #FFFFFF;
+            --text-gray: #B0B0B0;
+            --text-muted: #666666;
+            --success: #00FF88;
+            --error: #FF4444;
+            --border-glow: rgba(255, 107, 53, 0.3);
+        }
+
+        /* Dark mode variables (default) */
+        :root[data-theme="dark"] {
+            --bg-dark: #000000;
+            --bg-card: #1A1A1A;
+            --bg-lighter: #262626;
+            --text-light: #ff9d35;
+            --text-gray: #B0B0B0;
+            --text-muted: #666666;
+        }
+
+        /* Light mode variables */
+        :root[data-theme="light"] {
+            --primary-orange: #FF6B35;
+            --secondary-orange: #FF8C42;
+            --accent-yellow: #FFD700;
+            --gradient-start: #FF6B35;
+            --gradient-end: #FFD700;
+            --bg-dark: #FFFFFF;
+            --bg-card: #F8F9FA;
+            --bg-lighter: #E9ECEF;
+            --text-light: #ff6b35;
+            --text-gray: #6C757D;
+            --text-muted: #ADB5BD;
+            --success: #28A745;
+            --error: #DC3545;
+            --border-glow: rgba(255, 107, 53, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .gradient-bg {
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255, 107, 53, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 140, 66, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(255, 215, 0, 0.05) 0%, transparent 50%),
+                var(--bg-dark);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            transition: all 0.3s ease;
+        }
+
+        /* Dark mode specific background */
+        :root[data-theme="dark"] .gradient-bg {
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255, 107, 53, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 140, 66, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+                linear-gradient(135deg, #0D0D0D 0%, #0A0A0A 100%);
+        }
+
+        /* Light mode specific background */
+        :root[data-theme="light"] .gradient-bg {
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255, 107, 53, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 140, 66, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(255, 215, 0, 0.02) 0%, transparent 50%),
+                linear-gradient(135deg, #FFFFFF 0%, #F8F9FA 100%);
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            width: 100%;
+        }
+
+        /* Navbar styles */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 40px;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .navbar-logo-img {
+            height: 32px;
+            width: auto;
+            filter: drop-shadow(0 0 8px rgba(255, 107, 53, 0.3));
+        }
+
+        .navbar-logo {
+            height: 32px;
+            width: 32px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .navbar-brand {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-light);
+            text-decoration: none;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Theme toggle in navbar */
+        .theme-toggle-navbar {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 6px;
+            cursor: pointer;
+            color: var(--text-gray);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle-navbar:hover {
+            color: var(--text-light);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Wallet Connect Styles */
+        .wallet-connect-btn {
+            background: var(--primary-orange);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 12px;
+        }
+
+        .wallet-connect-btn:hover {
+            background: #E55A2B;
+            transform: translateY(-1px);
+        }
+
+        .wallet-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 6px 12px;
+            margin-right: 12px;
+            font-size: 12px;
+        }
+
+        .wallet-address {
+            color: var(--text-light);
+            font-family: monospace;
+        }
+
+        .launchium-balance {
+            color: var(--primary-orange);
+            font-weight: 600;
+            min-width: 80px;
+        }
+
+        .disconnect-btn {
+            background: transparent;
+            color: var(--text-gray);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .disconnect-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+
+        .manual-balance-btn {
+            background: transparent;
+            color: var(--primary-orange);
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .manual-balance-btn:hover {
+            background: rgba(255, 107, 53, 0.1);
+            transform: scale(1.1);
+        }
+
+        /* Access Warning Styles */
+        .access-warning {
+            background: rgba(255, 107, 53, 0.1);
+            border: 2px solid var(--primary-orange);
+            border-radius: 16px;
+            margin: 20px auto;
+            max-width: 600px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .warning-content h3 {
+            color: var(--primary-orange);
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .warning-content ul {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+
+        .warning-content li {
+            padding: 8px 0;
+            font-size: 16px;
+            color: var(--text-light);
+        }
+
+        #currentBalance {
+            color: var(--primary-orange);
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 20px rgb(250, 80, 18));
+            position: relative;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: var(--text-gray);
+            margin-bottom: 20px;
+        }
+
+        .header-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255, 107, 53, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: -1;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
+        }
+
+        .creator-box {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 40px;
+            border: 1px solid rgba(255, 107, 53, 0.2);
+        }
+
+        /* Light mode specific styles - More visible changes */
+        :root[data-theme="light"] body {
+            background: white !important;
+        }
+
+        :root[data-theme="light"] .creator-box {
+            background: white !important;
+            border: 1px solid rgba(255, 107, 53, 0.3) !important;
+        }
+
+        :root[data-theme="light"] .result-container {
+            background: white !important;
+            border: 1px solid rgba(255, 107, 53, 0.3) !important;
+        }
+
+        :root[data-theme="light"] input[type="text"],
+        :root[data-theme="light"] input[type="url"],
+        :root[data-theme="light"] textarea {
+            background: white !important;
+            border: 1px solid rgba(229, 90, 43, 0.3) !important;
+            color: #333 !important;
+        }
+
+        :root[data-theme="light"] input:focus,
+        :root[data-theme="light"] textarea:focus {
+            background: white !important;
+            border-color: var(--primary-orange) !important;
+            box-shadow: 
+                0 0 0 3px rgba(255, 107, 53, 0.3) !important;
+        }
+
+
+
+        :root[data-theme="light"] label {
+            color: #D4491F !important;
+        }
+
+        :root[data-theme="light"] input::placeholder,
+        :root[data-theme="light"] textarea::placeholder {
+            color: rgba(255, 107, 53, 0.7) !important;
+        }
+
+        :root[data-theme="light"] .result-item {
+            background: white !important;
+            border-left: 2px solid rgba(255, 107, 53, 0.8) !important;
+        }
+
+        :root[data-theme="light"] .status-container {
+            background: white !important;
+            border: 1px solid rgba(255, 107, 53, 0.3) !important;
+        }
+
+        :root[data-theme="light"] .result-label {
+            color: rgba(255, 107, 53, 0.9) !important;
+        }
+
+        :root[data-theme="light"] .result-value {
+            color: #D4491F !important;
+        }
+
+        /* Light mode for horizontal parameters */
+        :root[data-theme="light"] .param-label {
+            color: rgba(255, 107, 53, 0.7) !important;
+        }
+
+        :root[data-theme="light"] .param-value {
+            color: #E55A2B !important;
+        }
+
+        :root[data-theme="light"] .upload-preview img,
+        :root[data-theme="light"] .logo-preview {
+            background: rgba(0, 0, 0, 0.05) !important;
+        }
+
+
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #E55A2B;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"],
+        input[type="url"],
+        textarea {
+            width: 100%;
+            padding: 16px;
+            background: var(--bg-dark);
+            border: 1px solid rgba(229, 90, 43, 0.3);
+            border-radius: 12px;
+            color: var(--text-light);
+            font-size: 16px;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-orange);
+            box-shadow: 
+                0 0 0 2px rgba(255, 107, 53, 0.2),
+                0 0 20px rgba(255, 107, 53, 0.1);
+            background: rgba(26, 26, 26, 0.8);
+        }
+
+        input:hover,
+        textarea:hover {
+            border-color: rgba(229, 90, 43, 0.5);
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: rgba(255, 157, 53, 0.7);
+        }
+
+        /* File upload styles */
+        .file-upload-wrapper {
+            position: relative;
+        }
+
+        .file-upload-area {
+            border: 2px dashed rgba(255, 107, 53, 0.3);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 107, 53, 0.05);
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--primary-orange);
+            background: rgba(255, 107, 53, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .upload-text {
+            color: var(--text-light);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .upload-subtext {
+            color: var(--text-gray);
+            font-size: 12px;
+        }
+
+        .upload-preview {
+            position: relative;
+            margin-top: 16px;
+            border-radius: 12px;
+            overflow: hidden;
+            max-width: 200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .upload-preview img {
+            width: 100%;
+            height: 120px;
+            object-fit: contain;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .remove-image {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .remove-image:hover {
+            background: var(--error);
+        }
+
+        .fixed-info {
+            background: rgba(255, 107, 53, 0.05);
+            border: 1px solid var(--border-glow);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 30px;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .fixed-info h3 {
+            color: var(--primary-orange);
+            margin-bottom: 15px;
+            font-size: 18px;
+            filter: drop-shadow(0 0 10px rgba(255, 107, 53, 0.3));
+        }
+
+        /* Fixed Parameters - Horizontal Scrolling */
+        .fixed-params-container {
+            margin: 30px 0;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .fixed-params-scroll {
+            display: flex;
+            animation: scroll 15s linear infinite;
+            gap: 40px;
+            white-space: nowrap;
+        }
+
+        .fixed-param-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 120px;
+            padding: 0 20px;
+        }
+
+        .param-label {
+            color: rgba(255, 107, 53, 0.6);
+            font-size: 11px;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .param-value {
+            color: var(--primary-orange);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        @keyframes scroll {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .fixed-params-scroll:hover {
+            animation-play-state: paused;
+        }
+
+        .btn-create {
+            width: 100%;
+            padding: 20px;
+            background: var(--text-light);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 10px 30px rgba(255, 107, 53, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-create::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-create:hover::before {
+            left: 100%;
+        }
+
+        .btn-create:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 15px 40px rgba(255, 107, 53, 0.5),
+                0 0 20px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-create:disabled {
+            background: #444;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-container {
+            margin-top: 20px;
+            padding: 16px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 107, 53, 0.2);
+            display: none;
+        }
+
+        .status-container.active {
+            display: block;
+        }
+
+        .steps-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .step-item.active {
+            background: rgba(255, 107, 53, 0.1);
+        }
+
+        .step-item.completed {
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .step-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255, 107, 53, 0.2);
+            color: var(--primary-orange);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .step-item.active .step-number {
+            background: var(--primary-orange);
+            color: white;
+        }
+
+        .step-item.completed .step-number {
+            background: var(--success);
+            color: white;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-size: 13px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .step-status {
+            font-size: 11px;
+            color: var(--text-gray);
+            opacity: 0.8;
+        }
+
+        .step-item.active .step-status {
+            color: var(--primary-orange);
+        }
+
+        .step-item.completed .step-status {
+            color: var(--success);
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 107, 53, 0.2);
+            border-top: 3px solid var(--primary-orange);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 10px rgba(255, 107, 53, 0.3);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-container {
+            margin-top: 30px;
+            padding: 30px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 107, 53, 0.2);
+            display: none;
+        }
+
+        .result-container.active {
+            display: block;
+        }
+
+        .result-title {
+            color: var(--primary-orange);
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
+            filter: drop-shadow(0 0 10px rgba(255, 107, 53, 0.3));
+        }
+
+        .result-item {
+            background: var(--bg-dark);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-left: 2px solid rgba(255, 107, 53, 0.6);
+        }
+
+        .result-label {
+            color: rgba(255, 107, 53, 0.8);
+            font-size: 14px;
+            min-width: 120px;
+        }
+
+        .result-value {
+            color: rgba(255, 107, 53, 0.9);
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            text-align: right;
+            flex: 1;
+        }
+
+        .clickable-address {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .clickable-address:hover {
+            background: rgba(255, 107, 53, 0.1);
+            color: var(--primary-orange);
+            transform: scale(1.02);
+        }
+
+        .copy-btn {
+            background: var(--primary-orange);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(255, 107, 53, 0.3);
+        }
+
+        .copy-btn:hover {
+            background: var(--secondary-orange);
+            box-shadow: 0 0 15px rgba(255, 107, 53, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 107, 53, 0.2);
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-action::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 215, 0, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn-action:hover::before {
+            opacity: 1;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary-orange);
+            box-shadow: 
+                0 15px 40px rgba(255, 107, 53, 0.3),
+                0 0 20px rgba(255, 107, 53, 0.2);
+        }
+
+        .platform-icon {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .platform-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .platform-logo-circle {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .platform-name {
+            font-size: 12px;
+            color: var(--text-gray);
+            margin-top: 5px;
+        }
+
+        .logo-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 20px auto;
+            display: block;
+            border: 3px solid var(--primary-orange);
+            object-fit: contain;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .token-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            background: var(--bg-dark);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            color: var(--primary-orange);
+            font-size: 20px;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(255, 107, 53, 0.3);
+        }
+
+        .stat-label {
+            color: rgba(255, 107, 53, 0.7);
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-gray);
+            margin-top: auto;
+        }
+
+        .footer-logo {
+            color: var(--primary-orange);
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(255, 107, 53, 0.3);
+        }
+
+        /* Light mode navbar styles */
+        :root[data-theme="light"] .navbar {
+            border-bottom-color: rgba(0, 0, 0, 0.1);
+        }
+
+        :root[data-theme="light"] .theme-toggle-navbar {
+            border-color: rgba(0, 0, 0, 0.2);
+            color: var(--text-gray);
+        }
+
+        :root[data-theme="light"] .theme-toggle-navbar:hover {
+            border-color: rgba(0, 0, 0, 0.4);
+            color: var(--text-light);
+        }
+
+        @media (max-width: 768px) {
+            .navbar-brand {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 36px;
+            }
+            .creator-box {
+                padding: 25px;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+            .navbar {
+                padding: 12px 0;
+            }
+            .navbar-logo-img,
+            .navbar-logo {
+                height: 28px;
+                width: 28px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="gradient-bg"></div>
+    
+    <div class="container">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="navbar-left">
+                <img src="lnchmtransparent.png" alt="Launchium" class="navbar-logo-img" id="navbarLogoImg">
+                <div class="navbar-logo" style="display: none;" id="navbarLogoFallback">🚀</div>
+                <a href="#" class="navbar-brand">Launchium</a>
+            </div>
+            
+            <div class="navbar-right">
+                <button class="wallet-connect-btn" id="walletConnectBtn" style="display: block;">
+                    Connect Wallet
+                </button>
+                                <div class="wallet-info" id="walletInfo" style="display: none;">
+                    <span class="wallet-address" id="walletAddress"></span>
+                    <span class="launchium-balance" id="launchiumBalance"></span>
+                    <button class="manual-balance-btn" id="manualBalanceBtn" title="Manual balance check" style="display: none;">↻</button>
+                    <button class="disconnect-btn" id="disconnectBtn">×</button>
+                    </div>
+                <button class="theme-toggle-navbar" id="themeToggleBtn" title="Toggle theme">
+                    <svg id="theme-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Moon icon (default for dark mode) -->
+                        <path id="moon-icon" d="M21.5 14.0784C20.3003 14.7189 18.9301 15.0784 17.4751 15.0784C12.7491 15.0784 8.92157 11.2508 8.92157 6.52482C8.92157 5.06977 9.28108 3.69962 9.92157 2.5C5.66274 3.49698 2.5 7.31292 2.5 11.8784C2.5 17.4013 6.97715 21.8784 12.5 21.8784C17.0671 21.8784 20.8831 18.7157 21.88 14.4568L21.5 14.0784Z" fill="currentColor"/>
+                        <!-- Sun icon (hidden by default) -->
+                        <g id="sun-icon" style="display: none;">
+                            <circle cx="12" cy="12" r="4" fill="currentColor"/>
+                            <path d="M12 2V4M12 20V22M4.93 4.93L6.34 6.34M17.66 17.66L19.07 19.07M2 12H4M20 12H22M6.34 17.66L4.93 19.07M19.07 4.93L17.66 6.34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </g>
+                    </svg>
+                </button>
+                    </div>
+        </nav>
+
+
+
+                <!-- Access Control Warning -->
+        <div class="access-warning" id="accessWarning" style="display: none;">
+            <div class="warning-content">
+                <h3>Access Required</h3>
+                <p>To create tokens, you need:</p>
+                <ul>
+                    <li>Connected wallet</li>
+                    <li>2,000,000+ LAUNCHIUM tokens</li>
+                </ul>
+                <p>Your balance: <span id="currentBalance">0</span> LAUNCHIUM</p>
+                </div>
+            </div>
+
+        <div class="creator-box" id="token-form">
+            <form id="tokenForm">
+                <div class="form-group">
+                    <label for="tokenName">Token Name *</label>
+                    <input type="text" id="tokenName" placeholder="e.g., Launchium Token" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="tokenSymbol">Token Symbol *</label>
+                    <input type="text" id="tokenSymbol" placeholder="e.g., LAUNCH" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="tokenDescription">Description</label>
+                    <textarea id="tokenDescription" rows="3" placeholder="Describe your token..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="tokenWebsite">Website</label>
+                    <input type="url" id="tokenWebsite" placeholder="https://launchium.app">
+                </div>
+
+                <div class="form-group">
+                    <label for="tokenTwitter">Twitter</label>
+                    <input type="text" id="tokenTwitter" placeholder="@launchium">
+                </div>
+
+                <div class="form-group">
+                    <label for="tokenLogo">Token Logo</label>
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="tokenLogo" accept="image/*" style="display: none;">
+                        <div class="file-upload-area" id="fileUploadArea">
+                            <div class="upload-icon">+</div>
+                            <div class="upload-text">Click to upload logo</div>
+                            <div class="upload-subtext">PNG, JPG, GIF up to 2MB</div>
+                        </div>
+                        <div class="upload-preview" id="uploadPreview" style="display: none;">
+                            <img id="previewImage" alt="Logo preview">
+                            <button type="button" class="remove-image" id="removeImageBtn">✕</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-create" id="createBtn">
+                    CREATE TOKEN
+                </button>
+            </form>
+
+            <div class="status-container" id="statusContainer">
+                <div class="steps-list">
+                    <div class="step-item" id="step1">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-title">Uploading logo to IPFS</div>
+                            <div class="step-status">⏳ Waiting</div>
+                </div>
+                </div>
+                    <div class="step-item" id="step2">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-title">Preparing metadata</div>
+                            <div class="step-status">⏳ Waiting</div>
+                </div>
+                </div>
+                    <div class="step-item" id="step3">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-title">Creating mint account</div>
+                            <div class="step-status">⏳ Waiting</div>
+                </div>
+                    </div>
+                    <div class="step-item" id="step4">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <div class="step-title">Initializing metadata</div>
+                            <div class="step-status">⏳ Waiting</div>
+                        </div>
+                    </div>
+                    <div class="step-item" id="step5">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <div class="step-title">Minting tokens</div>
+                            <div class="step-status">⏳ Waiting</div>
+                        </div>
+                    </div>
+                    <div class="step-item" id="step6">
+                        <div class="step-number">6</div>
+                        <div class="step-content">
+                            <div class="step-title">Disabling mint authority</div>
+                            <div class="step-status">⏳ Waiting</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-container" id="resultContainer">
+                <h2 class="result-title">TOKEN CREATED SUCCESSFULLY!</h2>
+                <img id="tokenLogoPreview" class="logo-preview" alt="Token Logo">
+                
+                <div class="token-stats">
+                    <div class="stat-box">
+                        <div class="stat-value" id="statName">-</div>
+                        <div class="stat-label">NAME</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="statSymbol">-</div>
+                        <div class="stat-label">SYMBOL</div>
+                    </div>
+                </div>
+
+                <div class="result-item">
+                    <span class="result-label">Contract Address:</span>
+                                            <span class="result-value clickable-address" id="tokenCA" title="Click to copy"></span>
+                        <button class="copy-btn" id="copyCABtn">Copy</button>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">Supply:</span>
+                    <span class="result-value">1,000,000,000</span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">Decimals:</span>
+                    <span class="result-value">9</span>
+                </div>
+                
+
+                
+
+
+                <div class="action-buttons">
+                    <a href="#" class="btn-action" id="viewExplorerBtn" target="_blank" title="Solana Explorer">
+                        <img src="explorer.png" alt="Solana Explorer" class="platform-logo-circle" id="explorerImg">
+                    </a>
+                    <a href="#" class="btn-action" id="viewSolscanBtn" target="_blank" title="Solscan">
+                        <img src="solscan.png" alt="Solscan" class="platform-logo-circle" id="solscanImg">
+                    </a>
+                    <a href="#" class="btn-action" id="viewRugcheckBtn" target="_blank" title="Rugcheck">
+                        <img src="rugcheck.png" alt="Rugcheck" class="platform-logo-circle" id="rugcheckImg">
+                    </a>
+                    <a href="#" class="btn-action" id="viewBirdeye" target="_blank" title="Birdeye">
+                        <img src="birdeye.webp" alt="Birdeye" class="platform-logo-circle" id="birdeyeImg">
+                    </a>
+                    <a href="#" class="btn-action" id="viewGmgnBtn" target="_blank" title="GMGN.ai">
+                        <img src="gmgn.webp" alt="GMGN.ai" class="platform-logo-circle" id="gmgnImg">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none; width: 28px; height: 28px;" id="gmgnSvg">
+                            <circle cx="20" cy="20" r="20" fill="#1DB584"/>
+                            <path d="M12 16L20 24L28 16" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                    </a>
+                    <a href="#" class="btn-action" id="viewDexscreenerBtn" target="_blank" title="DexScreener">
+                        <img src="dexs.png" alt="DexScreener" class="platform-logo-circle" id="dexscreenerImg">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none; width: 28px; height: 28px;" id="dexscreenerSvg">
+                            <circle cx="20" cy="20" r="20" fill="#1F73E6"/>
+                            <rect x="12" y="12" width="16" height="16" rx="2" fill="white"/>
+                            <path d="M16 18L22 18M16 22L20 22" stroke="#1F73E6" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+    <!-- Fixed Parameters Section (horizontal scrolling outside box) -->
+    <div class="fixed-params-container">
+        <div class="fixed-params-scroll">
+            <div class="fixed-param-item">
+                <span class="param-label">Supply</span>
+                <span class="param-value">1,000,000,000</span>
+            </div>
+            <div class="fixed-param-item">
+                <span class="param-label">Decimals</span>
+                <span class="param-value">9</span>
+            </div>
+            <div class="fixed-param-item">
+                <span class="param-label">Standard</span>
+                <span class="param-value">Token-2022</span>
+            </div>
+            <div class="fixed-param-item">
+                <span class="param-label">Authority</span>
+                <span class="param-value">Disabled</span>
+            </div>
+            <!-- Duplicate for infinite scroll -->
+            <div class="fixed-param-item">
+                <span class="param-label">Supply</span>
+                <span class="param-value">1,000,000,000</span>
+            </div>
+            <div class="fixed-param-item">
+                <span class="param-label">Decimals</span>
+                <span class="param-value">9</span>
+            </div>
+            <div class="fixed-param-item">
+                <span class="param-label">Standard</span>
+                <span class="param-value">Token-2022</span>
+            </div>
+            <div class="fixed-param-item">
+                <span class="param-label">Authority</span>
+                <span class="param-value">Disabled</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2025 <span class="footer-logo">LAUNCHIUM</span> - Launch a Token with a Tweet</p>
+    </footer>
+
+    <script src="/js/solana-web3.min.js"></script>
+    <script>
+        // Dynamic API URL for development and production
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3001'
+            : 'https://your-backend.railway.app'; // Will be updated with actual Railway URL
+        const DEFAULT_LOGO = 'https://gateway.pinata.cloud/ipfs/bafybeidv23lg2sz756fouki7wbyenqwfir64k74kyydghxzepj3g425lxi';
+        
+        // Launchium Token Constants
+        const LAUNCHIUM_TOKEN_ADDRESS = 'HfqS59Gc3CjMsLTUEcWznkcsKBUpqZJ8FTyBU2jhVVKX';
+        const REQUIRED_LAUNCHIUM_BALANCE = 2000000; // 2 million
+        
+        // Different possible decimal configurations to try
+        const POSSIBLE_DECIMALS = [9, 6, 8, 0]; // Most common Solana token decimals
+        
+        // Alternative token addresses to try (in case of different versions)
+        const ALTERNATIVE_ADDRESSES = [
+            'HfqS59Gc3CjMsLTUEcWznkcsKBUpqZJ8FTyBU2jhVVKX', // Original
+            // Add other possible addresses if needed
+        ];
+        
+        console.log('DEBUG: Using LAUNCHIUM token address:', LAUNCHIUM_TOKEN_ADDRESS);
+        console.log('DEBUG: Required balance:', REQUIRED_LAUNCHIUM_BALANCE);
+        
+        // Global state
+        let wallet = null;
+        let connection = null;
+        let userLaunchiumBalance = 0;
+
+        // Initialize Solana connection
+        async function initConnection() {
+            // List of alternative RPC endpoints to try
+            const rpcEndpoints = [
+                'https://mainnet.helius-rpc.com/?api-key=de9e0d68-0a33-46f7-be67-d481292c0d17', // Your Helius RPC - Primary
+                'https://solana-api.projectserum.com',
+                'https://rpc.ankr.com/solana',
+                'https://solana-mainnet.g.alchemy.com/v2/demo',
+                'https://api.mainnet-beta.solana.com'
+            ];
+            
+            for (const endpoint of rpcEndpoints) {
+                try {
+                    console.log(`DEBUG: Trying RPC endpoint: ${endpoint}`);
+                    const testConnection = new solanaWeb3.Connection(endpoint, 'confirmed');
+                    
+                    // Test the connection
+                    await testConnection.getSlot();
+                    
+                    connection = testConnection;
+                    console.log(`✅ Solana connection initialized with: ${endpoint}`);
+                    return;
+                } catch (error) {
+                    console.warn(`❌ Failed to connect to ${endpoint}:`, error.message);
+                    continue;
+                }
+            }
+            
+            console.error('❌ All RPC endpoints failed!');
+        }
+
+        // Connect wallet
+        async function connectWallet() {
+            try {
+                if (typeof window.solana !== 'undefined' && window.solana.isPhantom) {
+                    const response = await window.solana.connect();
+                    wallet = response.publicKey.toString();
+                    
+                    // Update UI
+                    document.getElementById('walletConnectBtn').style.display = 'none';
+                    document.getElementById('walletInfo').style.display = 'flex';
+                    document.getElementById('walletAddress').textContent = `${wallet.slice(0, 4)}...${wallet.slice(-4)}`;
+                    
+                    // Check Launchium balance
+                    await checkLaunchiumBalance();
+                    
+                    console.log('Wallet connected:', wallet);
+                } else {
+                    alert('Please install Phantom wallet!');
+                }
+            } catch (error) {
+                console.error('Failed to connect wallet:', error);
+                alert('Failed to connect wallet. Please try again.');
+            }
+        }
+
+        // Disconnect wallet
+        function disconnectWallet() {
+            wallet = null;
+            userLaunchiumBalance = 0;
+            
+            // Update UI
+            document.getElementById('walletConnectBtn').style.display = 'block';
+            document.getElementById('walletInfo').style.display = 'none';
+            document.getElementById('accessWarning').style.display = 'none';
+            document.getElementById('token-form').style.display = 'block';
+            
+            console.log('Wallet disconnected');
+        }
+
+        // Check Launchium token balance
+        async function checkLaunchiumBalance() {
+            try {
+                if (!wallet || !connection) {
+                    console.log('DEBUG: No wallet or connection');
+                    return;
+                }
+
+                console.log('DEBUG: Checking balance for wallet:', wallet);
+                console.log('DEBUG: Token address:', LAUNCHIUM_TOKEN_ADDRESS);
+                
+                const publicKey = new solanaWeb3.PublicKey(wallet);
+                const tokenMint = new solanaWeb3.PublicKey(LAUNCHIUM_TOKEN_ADDRESS);
+                
+                // First, let's check all token accounts to see what tokens this wallet has
+                const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
+                const allTokenAccounts = await connection.getTokenAccountsByOwner(publicKey, {
+                    programId: TOKEN_PROGRAM_ID
+                });
+                
+                console.log('DEBUG: Wallet has', allTokenAccounts.value.length, 'token accounts total');
+                
+                // Log all token mints for debugging
+                for (let i = 0; i < Math.min(allTokenAccounts.value.length, 10); i++) {
+                    const tokenAccount = allTokenAccounts.value[i];
+                    const accountData = await connection.getParsedAccountInfo(tokenAccount.pubkey);
+                    if (accountData.value?.data?.parsed) {
+                        const mint = accountData.value.data.parsed.info.mint;
+                        const amount = accountData.value.data.parsed.info.tokenAmount;
+                        console.log(`DEBUG: Token ${i}:`, {
+                            mint: mint,
+                            balance: amount.uiAmount,
+                            decimals: amount.decimals
+                        });
+                    }
+                }
+
+                // Get token accounts for specific LAUNCHIUM mint
+                const tokenAccounts = await connection.getTokenAccountsByOwner(publicKey, {
+                    mint: tokenMint
+                });
+
+                console.log('DEBUG: Found LAUNCHIUM token accounts:', tokenAccounts.value.length);
+
+                let balance = 0;
+                if (tokenAccounts.value.length > 0) {
+                    const accountInfo = await connection.getTokenAccountBalance(tokenAccounts.value[0].pubkey);
+                    console.log('DEBUG: LAUNCHIUM Account info:', accountInfo);
+                    
+                    const rawAmount = accountInfo.value.amount;
+                    const decimals = accountInfo.value.decimals;
+                    balance = parseInt(rawAmount) / Math.pow(10, decimals);
+                    
+                    console.log('DEBUG: Raw amount string:', rawAmount);
+                    console.log('DEBUG: Decimals:', decimals);
+                    console.log('DEBUG: Calculated balance (method 1):', balance);
+                    
+                    // Try different decimal calculations in case of confusion
+                    console.log('DEBUG: Alternative calculations:');
+                    POSSIBLE_DECIMALS.forEach(testDecimals => {
+                        const altBalance = parseInt(rawAmount) / Math.pow(10, testDecimals);
+                        console.log(`DEBUG: With ${testDecimals} decimals: ${altBalance.toLocaleString()}`);
+                        
+                        // If this calculation gives us a reasonable balance (>= 2M), use it
+                        if (altBalance >= REQUIRED_LAUNCHIUM_BALANCE && balance < REQUIRED_LAUNCHIUM_BALANCE) {
+                            console.log(`DEBUG: Found better balance calculation with ${testDecimals} decimals!`);
+                            balance = altBalance;
+                        }
+                    });
+                    
+                    console.log('DEBUG: Final calculated LAUNCHIUM balance:', balance);
+                } else {
+                    console.log('DEBUG: No LAUNCHIUM token accounts found for mint:', LAUNCHIUM_TOKEN_ADDRESS);
+                }
+
+                userLaunchiumBalance = balance;
+                
+                // Update UI
+                document.getElementById('launchiumBalance').textContent = `${balance.toLocaleString()} LAUNCHIUM`;
+                document.getElementById('currentBalance').textContent = balance.toLocaleString();
+                
+                console.log('DEBUG: Balance set to:', userLaunchiumBalance);
+                console.log('DEBUG: Required balance:', REQUIRED_LAUNCHIUM_BALANCE);
+                console.log('DEBUG: Has access:', userLaunchiumBalance >= REQUIRED_LAUNCHIUM_BALANCE);
+                
+                // Check access
+                checkAccess();
+                
+                console.log('Final balance check:', balance);
+            } catch (error) {
+                console.error('Failed to check Launchium balance:', error);
+                console.error('Error details:', {
+                    message: error.message,
+                    stack: error.stack,
+                    wallet: wallet,
+                    tokenAddress: LAUNCHIUM_TOKEN_ADDRESS
+                });
+                userLaunchiumBalance = 0;
+                document.getElementById('launchiumBalance').textContent = 'RPC Error - Click ↻';
+                document.getElementById('currentBalance').textContent = '0';
+                
+                // Show manual balance button on error
+                document.getElementById('manualBalanceBtn').style.display = 'block';
+                
+                checkAccess();
+            }
+        }
+
+        // Manual balance override for RPC issues
+        function manualBalanceOverride() {
+            const balance = prompt('RPC endpoint\'ten balance alınamadı.\n\nLAUNCHIUM token balance\'ınızı manuel olarak girin (örn: 5160000):');
+            if (balance && !isNaN(balance)) {
+                const numBalance = parseFloat(balance);
+                userLaunchiumBalance = numBalance;
+                document.getElementById('launchiumBalance').textContent = `${numBalance.toLocaleString()} LAUNCHIUM (Manual)`;
+                document.getElementById('currentBalance').textContent = numBalance.toLocaleString();
+                document.getElementById('manualBalanceBtn').style.display = 'none';
+                console.log('DEBUG: Manual balance set to:', numBalance);
+                checkAccess();
+            }
+        }
+
+        // Check if user has access
+        function checkAccess() {
+            const hasAccess = wallet && userLaunchiumBalance >= REQUIRED_LAUNCHIUM_BALANCE;
+            
+            console.log('DEBUG: checkAccess() called');
+            console.log('DEBUG: wallet:', wallet);
+            console.log('DEBUG: userLaunchiumBalance:', userLaunchiumBalance);
+            console.log('DEBUG: REQUIRED_LAUNCHIUM_BALANCE:', REQUIRED_LAUNCHIUM_BALANCE);
+            console.log('DEBUG: hasAccess:', hasAccess);
+            
+            if (hasAccess) {
+                console.log('DEBUG: Showing token form (access granted)');
+                document.getElementById('accessWarning').style.display = 'none';
+                document.getElementById('token-form').style.display = 'block';
+            } else if (wallet) {
+                console.log('DEBUG: Showing access warning (wallet connected but insufficient balance)');
+                document.getElementById('accessWarning').style.display = 'block';
+                document.getElementById('token-form').style.display = 'none';
+            } else {
+                console.log('DEBUG: No wallet connected - showing form for testing');
+                document.getElementById('accessWarning').style.display = 'none';
+                document.getElementById('token-form').style.display = 'block';
+            }
+        }
+
+        // Theme toggle functionality
+        function toggleTheme() {
+            const html = document.documentElement;
+            const moonIcon = document.getElementById('moon-icon');
+            const sunIcon = document.getElementById('sun-icon');
+            const currentTheme = html.getAttribute('data-theme');
+            
+            console.log('Current theme:', currentTheme);
+            
+            if (currentTheme === 'dark') {
+                html.setAttribute('data-theme', 'light');
+                // Show sun icon, hide moon icon
+                moonIcon.style.display = 'none';
+                sunIcon.style.display = 'block';
+                localStorage.setItem('theme', 'light');
+                console.log('Switched to light mode');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                // Show moon icon, hide sun icon
+                moonIcon.style.display = 'block';
+                sunIcon.style.display = 'none';
+                localStorage.setItem('theme', 'dark');
+                console.log('Switched to dark mode');
+            }
+            
+            // Debug: Check applied theme
+            console.log('Theme after change:', html.getAttribute('data-theme'));
+            console.log('CSS variables check:', getComputedStyle(html).getPropertyValue('--bg-dark'));
+        }
+
+        // Setup image error handling for platform logos
+        function setupImageErrorHandling() {
+            const imageConfigs = [
+                { imgId: 'explorerImg', svgId: null },
+                { imgId: 'solscanImg', svgId: null },
+                { imgId: 'rugcheckImg', svgId: null },
+                { imgId: 'birdeyeImg', svgId: null },
+                { imgId: 'gmgnImg', svgId: 'gmgnSvg' },
+                { imgId: 'dexscreenerImg', svgId: 'dexscreenerSvg' }
+            ];
+
+            imageConfigs.forEach(config => {
+                const img = document.getElementById(config.imgId);
+                if (img) {
+                    img.addEventListener('error', function() {
+                        this.style.display = 'none';
+                        if (config.svgId) {
+                            const svg = document.getElementById(config.svgId);
+                            if (svg) {
+                                svg.style.display = 'block';
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        // Load saved theme and setup event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            const html = document.documentElement;
+            const moonIcon = document.getElementById('moon-icon');
+            const sunIcon = document.getElementById('sun-icon');
+            
+            html.setAttribute('data-theme', savedTheme);
+            
+            // Set initial icon based on saved theme
+            if (savedTheme === 'dark') {
+                moonIcon.style.display = 'block';
+                sunIcon.style.display = 'none';
+            } else {
+                moonIcon.style.display = 'none';
+                sunIcon.style.display = 'block';
+            }
+            
+            // Setup file upload
+            setupFileUpload();
+            
+            // Initialize Solana connection
+            initConnection();
+            
+            // Wallet event listeners
+            document.getElementById('walletConnectBtn').addEventListener('click', connectWallet);
+            document.getElementById('disconnectBtn').addEventListener('click', disconnectWallet);
+            document.getElementById('manualBalanceBtn').addEventListener('click', manualBalanceOverride);
+            
+            // Theme toggle event listener
+            document.getElementById('themeToggleBtn').addEventListener('click', toggleTheme);
+            
+            // File upload area click event
+            document.getElementById('fileUploadArea').addEventListener('click', function() {
+                document.getElementById('tokenLogo').click();
+            });
+            
+            // Remove uploaded image event
+            document.getElementById('removeImageBtn').addEventListener('click', removeUploadedImage);
+            
+            // Copy buttons event listeners
+            document.getElementById('copyCABtn').addEventListener('click', function() {
+                copyToClipboard('tokenCA');
+                showToast('Token address copied to clipboard!');
+            });
+            
+
+            
+            // Token address click event
+            document.getElementById('tokenCA').addEventListener('click', function() {
+                copyToClipboard('tokenCA');
+                showToast('Token address copied to clipboard!');
+            });
+
+            // Handle image load errors for platform logos
+            setupImageErrorHandling();
+            
+            // Navbar logo error handling
+            const navbarLogoImg = document.getElementById('navbarLogoImg');
+            const navbarLogoFallback = document.getElementById('navbarLogoFallback');
+            if (navbarLogoImg) {
+                navbarLogoImg.addEventListener('error', function() {
+                    this.style.display = 'none';
+                    if (navbarLogoFallback) navbarLogoFallback.style.display = 'flex';
+                });
+            }
+        });
+
+        // File upload functionality
+        function setupFileUpload() {
+            const fileInput = document.getElementById('tokenLogo');
+            
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                        alert('File too large. Please choose an image under 2MB.');
+                        return;
+                    }
+                    
+                    if (!file.type.startsWith('image/')) {
+                        alert('Please select an image file.');
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const uploadArea = document.querySelector('.file-upload-area');
+                        const uploadPreview = document.getElementById('uploadPreview');
+                        const previewImage = document.getElementById('previewImage');
+                        
+                        previewImage.src = e.target.result;
+                        uploadArea.style.display = 'none';
+                        uploadPreview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        function removeUploadedImage() {
+            const fileInput = document.getElementById('tokenLogo');
+            const uploadArea = document.querySelector('.file-upload-area');
+            const uploadPreview = document.getElementById('uploadPreview');
+            
+            fileInput.value = '';
+            uploadArea.style.display = 'block';
+            uploadPreview.style.display = 'none';
+        }
+
+        // Convert file to base64 for upload
+        function getLogoData() {
+            return new Promise((resolve) => {
+                const fileInput = document.getElementById('tokenLogo');
+                const file = fileInput.files[0];
+                
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        resolve({
+                            data: e.target.result,
+                            type: file.type,
+                            name: file.name
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    resolve(null);
+                }
+            });
+        }
+
+        document.getElementById('tokenForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const createBtn = document.getElementById('createBtn');
+            const statusContainer = document.getElementById('statusContainer');
+            const resultContainer = document.getElementById('resultContainer');
+            
+            // Get form values
+            const logoData = await getLogoData();
+            // Check access before proceeding
+            if (!wallet || userLaunchiumBalance < REQUIRED_LAUNCHIUM_BALANCE) {
+                alert('Access denied: You need a connected wallet with 2,000,000+ LAUNCHIUM tokens.');
+                createBtn.disabled = false;
+                createBtn.textContent = 'CREATE TOKEN';
+                return;
+            }
+
+            const tokenData = {
+                name: document.getElementById('tokenName').value.trim(),
+                symbol: document.getElementById('tokenSymbol').value.trim().toUpperCase(),
+                description: document.getElementById('tokenDescription').value.trim() || `${document.getElementById('tokenName').value.trim()} - Created with Launchium Token Authority`,
+                website: document.getElementById('tokenWebsite').value.trim() || 'https://launchium.app',
+                twitter: document.getElementById('tokenTwitter').value.trim() || '@launchium',
+                logoUrl: logoData ? logoData.data : DEFAULT_LOGO,
+                logoFile: logoData,
+                walletAddress: wallet
+            };
+            
+            console.log('Token data being sent:', {
+                ...tokenData,
+                logoUrl: logoData ? 'base64 data present' : DEFAULT_LOGO,
+                logoFile: logoData ? 'file data present' : 'no file'
+            });
+            
+            // Disable form
+            createBtn.disabled = true;
+            createBtn.textContent = 'CREATING...';
+            statusContainer.classList.add('active');
+            resultContainer.classList.remove('active');
+            
+            // Reset all steps to waiting state
+            document.querySelectorAll('.step-item').forEach(step => {
+                step.classList.remove('active', 'completed');
+                const stepStatus = step.querySelector('.step-status');
+                stepStatus.textContent = '⏳ Waiting';
+            });
+            
+            try {
+                // Create token via API
+                const response = await fetch(`${API_URL}/create-token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(tokenData)
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Server response error:', response.status, errorText);
+                    throw new Error(`Token creation failed: ${response.status} - ${errorText}`);
+                }
+                
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                console.log('Received data:', data);
+                                updateStatus(data);
+                            } catch (e) {
+                                console.error('Parse error:', e);
+                            }
+                        }
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error creating token: ' + error.message);
+            } finally {
+                createBtn.disabled = false;
+                createBtn.textContent = 'CREATE TOKEN';
+            }
+        });
+        
+        function updateStatus(data) {
+            console.log('updateStatus called with:', data);
+            
+            if (data.step) {
+                // Update current step
+                const currentStepElement = document.getElementById(`step${data.step}`);
+                console.log(`Looking for step${data.step}, found:`, currentStepElement);
+                
+                if (currentStepElement) {
+                    const stepStatus = currentStepElement.querySelector('.step-status');
+                    console.log('Step status element:', stepStatus);
+                    
+                    // Remove all active states first
+                    document.querySelectorAll('.step-item').forEach(step => {
+                        step.classList.remove('active');
+                    });
+                    
+                    // Set current step as active
+                    currentStepElement.classList.add('active');
+                    
+                    if (data.status === 'active') {
+                        stepStatus.textContent = '🔄 Processing...';
+                    } else if (data.status === 'success') {
+                        stepStatus.textContent = 'Completed';
+                        currentStepElement.classList.remove('active');
+                        currentStepElement.classList.add('completed');
+                    } else if (data.status === 'error') {
+                        stepStatus.textContent = '❌ Error';
+                    }
+                }
+            }
+            
+            if (data.complete && data.tokenInfo) {
+                // Keep status container visible but mark all steps complete
+                setTimeout(() => {
+                    document.querySelectorAll('.step-item').forEach(step => {
+                        if (!step.classList.contains('completed')) {
+                            step.classList.add('completed');
+                            const status = step.querySelector('.step-status');
+                            status.textContent = 'Completed';
+                        }
+                    });
+                }, 1000);
+                
+                showResult(data.tokenInfo);
+            }
+        }
+        
+        function showResult(tokenInfo) {
+            console.log('showResult called with:', tokenInfo);
+            
+            // Update all fields
+            const tokenCAElement = document.getElementById('tokenCA');
+            console.log('tokenCA element:', tokenCAElement);
+            if (tokenCAElement) {
+                tokenCAElement.textContent = tokenInfo.mint;
+            }
+
+            const logoElement = document.getElementById('tokenLogoPreview');
+            if (logoElement) logoElement.src = tokenInfo.logoUrl;
+            
+            const nameElement = document.getElementById('statName');
+            if (nameElement) nameElement.textContent = tokenInfo.name;
+            
+            const symbolElement = document.getElementById('statSymbol');
+            if (symbolElement) symbolElement.textContent = tokenInfo.symbol;
+            
+            // Update action links with null checks
+            const explorerBtn = document.getElementById('viewExplorerBtn');
+            if (explorerBtn) explorerBtn.href = `https://explorer.solana.com/address/${tokenInfo.mint}`;
+            
+            const solscanBtn = document.getElementById('viewSolscanBtn');
+            if (solscanBtn) solscanBtn.href = `https://solscan.io/token/${tokenInfo.mint}`;
+            
+            const rugcheckBtn = document.getElementById('viewRugcheckBtn');
+            if (rugcheckBtn) rugcheckBtn.href = `https://rugcheck.xyz/tokens/${tokenInfo.mint}`;
+            
+            const birdeyeBtn = document.getElementById('viewBirdeye');
+            if (birdeyeBtn) birdeyeBtn.href = `https://birdeye.so/token/${tokenInfo.mint}`;
+            
+            const gmgnBtn = document.getElementById('viewGmgnBtn');
+            if (gmgnBtn) gmgnBtn.href = `https://gmgn.ai/sol/token/${tokenInfo.mint}`;
+            
+            const dexscreenerBtn = document.getElementById('viewDexscreenerBtn');
+            if (dexscreenerBtn) dexscreenerBtn.href = `https://dexscreener.com/solana/${tokenInfo.mint}`;
+            
+            const resultContainer = document.getElementById('resultContainer');
+            console.log('resultContainer element:', resultContainer);
+            if (resultContainer) {
+                resultContainer.classList.add('active');
+            }
+        }
+        
+        function copyToClipboard(elementId, buttonElement) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = buttonElement || event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.backgroundColor = 'var(--success)';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.backgroundColor = 'var(--primary-orange)';
+                }, 2000);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                const btn = buttonElement || event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        function copyTokenAddress() {
+            const address = document.getElementById('tokenCA').textContent;
+            navigator.clipboard.writeText(address).then(() => {
+                showToast('Token address copied to clipboard!');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--success);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                z-index: 9999;
+                font-weight: 600;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                transition: all 0.3s ease;
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
