@@ -1,0 +1,12 @@
+{
+  "name": "launchium-frontend",
+  "version": "1.0.0",
+  "description": "Launchium Token Creator Frontend",
+  "scripts": {
+    "build": "echo 'Static frontend - no build needed'",
+    "start": "echo 'Static frontend - no server needed'"
+  },
+  "dependencies": {},
+  "keywords": ["solana", "token", "creator", "frontend"],
+  "license": "MIT"
+}
