@@ -174,23 +174,9 @@ async function uploadJSONToIPFS(jsonData) {
     return fallbackUrl;
     
   } catch (error) {
-    console.error("Failed to upload to IPFS:", error.response?.data || error.message);
-    console.log("Creating robust fallback metadata...");
-    
-    // Create a more comprehensive fallback
-    const fallbackMetadata = {
-      name: jsonData.name || "Launchium Token",
-      symbol: jsonData.symbol || "LAUNCH", 
-      description: jsonData.description || "Token created with Launchium",
-      image: jsonData.image || DEFAULT_LOGO,
-      external_url: "https://launchium.app",
-      attributes: [
-        { trait_type: "Platform", value: "Launchium" },
-        { trait_type: "Status", value: "Fallback Metadata" }
-      ]
-    };
-    
-    return `data:application/json;base64,${Buffer.from(JSON.stringify(fallbackMetadata)).toString('base64')}`;
+    console.error("❌ IPFS upload failed:", error.response?.data || error.message);
+    console.error("❌ Cannot proceed without proper IPFS metadata");
+    throw new Error(`IPFS upload failed: ${error.message}. Real IPFS URL is required for proper token functionality.`);
   }
 }
 
@@ -292,7 +278,7 @@ async function createLaunchiumToken() {
     const tokenDetails = await getTokenDetails();
     rl.close();
     
-    console.log("\nPreparing metadata...");
+    console.log("\n📝 Step 1/6: Preparing metadata structure...");
     
     const metadataJson = {
       name: tokenDetails.name,
@@ -352,10 +338,11 @@ async function createLaunchiumToken() {
       }
     };
     
+    console.log("\n📤 Step 2/6: Uploading metadata to IPFS...");
     const metadataUri = await uploadJSONToIPFS(metadataJson);
     
     // Validate metadata is accessible
-    console.log("\nValidating metadata accessibility...");
+    console.log("\n✅ Step 3/6: Validating metadata accessibility...");
     try {
       const metadataCheck = await axios.get(metadataUri, { timeout: 10000 });
       console.log("✓ Metadata validation successful");
@@ -426,7 +413,7 @@ async function createLaunchiumToken() {
     const totalSpace = mintLen + metadataExtension + metadataLen;
     const lamports = await connection.getMinimumBalanceForRentExemption(totalSpace);
     
-    console.log("\n[Launchium Token Authority] Step 1/5: Creating mint account...");
+    console.log("\n🪙 Step 4/6: Creating mint account...");
     const createAccountInstruction = SystemProgram.createAccount({
       fromPubkey: payer.publicKey,
       newAccountPubkey: mint,
@@ -471,7 +458,7 @@ async function createLaunchiumToken() {
     await connection.confirmTransaction(signature, 'confirmed');
     console.log("✓ Mint created by Launchium Token Authority");
     
-    console.log("\n[Launchium Token Authority] Step 2/5: Initializing metadata...");
+    console.log("\n📋 Step 5/6: Initializing on-chain metadata...");
     const initializeMetadataInstruction = createInitializeInstruction({
       programId: TOKEN_2022_PROGRAM_ID,
       metadata: mint,
@@ -518,7 +505,7 @@ async function createLaunchiumToken() {
       ASSOCIATED_TOKEN_PROGRAM_ID
     );
     
-    console.log("\n[Launchium Token Authority] Step 3/5: Creating token account...");
+    console.log("\n🏦 Step 6/6: Creating token account and minting supply...");
     const createAtaInstruction = createAssociatedTokenAccountInstruction(
       payer.publicKey,
       associatedToken,
@@ -544,7 +531,7 @@ async function createLaunchiumToken() {
     
     const mintAmount = BigInt(FIXED_SUPPLY * Math.pow(10, FIXED_DECIMALS));
     
-    console.log("\n[Launchium Token Authority] Step 4/5: Minting 1,000,000,000 tokens...");
+    console.log("\n💰 Minting 1,000,000,000 tokens...");
     const mintToInstruction = createMintToInstruction(
       mint,
       associatedToken,
@@ -568,7 +555,7 @@ async function createLaunchiumToken() {
     
     console.log("✓ Tokens minted");
     
-    console.log("\n[Launchium Token Authority] Step 5/5: Disabling mint authority...");
+    console.log("\n🔒 Finalizing: Disabling mint authority (fixed supply)...");
     const disableMintInstruction = createSetAuthorityInstruction(
       mint,
       payer.publicKey,
