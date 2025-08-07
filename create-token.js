@@ -77,6 +77,7 @@ const RPC_URLS = [
 const FIXED_SUPPLY = 1_000_000_000;
 const FIXED_DECIMALS = 9;
 const LAUNCHIUM_LOGO = "https://gateway.pinata.cloud/ipfs/bafybeidv23lg2sz756fouki7wbyenqwfir64k74kyydghxzepj3g425lxi";
+const DEFAULT_LOGO = LAUNCHIUM_LOGO;
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -95,6 +96,14 @@ const secureLog = (message, sensitive = false) => {
 };
 
 async function uploadJSONToIPFS(jsonData) {
+  // Multiple IPFS gateways for reliability  
+  const ipfsGateways = [
+    'https://gateway.pinata.cloud/ipfs/',
+    'https://ipfs.io/ipfs/',
+    'https://cloudflare-ipfs.com/ipfs/',
+    'https://dweb.link/ipfs/'
+  ];
+  
   try {
     console.log("Uploading metadata to IPFS via Pinata...");
     
@@ -103,25 +112,29 @@ async function uploadJSONToIPFS(jsonData) {
     }
     
     const formData = new FormData();
-    const jsonString = JSON.stringify(jsonData);
+    const jsonString = JSON.stringify(jsonData, null, 2); // Pretty formatted
     
     formData.append('file', Buffer.from(jsonString), {
-      filename: 'metadata.json',
+      filename: `metadata-${jsonData.symbol}-${Date.now()}.json`,
       contentType: 'application/json',
     });
     
     formData.append('pinataOptions', JSON.stringify({
-      cidVersion: 1
+      cidVersion: 1,
+      wrapWithDirectory: false
     }));
     
     formData.append('pinataMetadata', JSON.stringify({
-      name: `Token Metadata - ${jsonData.name}`,
+      name: `${jsonData.name} (${jsonData.symbol}) - Launchium Token Metadata`,
       keyvalues: {
         token: jsonData.symbol,
-        platform: 'Launchium'
+        platform: 'Launchium',
+        created: new Date().toISOString(),
+        type: 'token-metadata'
       }
     }));
     
+    console.log("  Uploading to Pinata...");
     const response = await axios.post(
       'https://api.pinata.cloud/pinning/pinFileToIPFS',
       formData,
@@ -129,24 +142,55 @@ async function uploadJSONToIPFS(jsonData) {
         maxBodyLength: Infinity,
         headers: {
           ...formData.getHeaders(),
-          'pinata_api_key': PINATA_API_KEY,
-          'pinata_secret_api_key': PINATA_SECRET_KEY
+          'pinata_api_key': PINATA_API_KEY?.trim(),
+          'pinata_secret_api_key': PINATA_SECRET_KEY?.trim()
         },
-        timeout: 30000
+        timeout: 45000 // Increased timeout
       }
     );
     
-    // Use Pinata's gateway for better reliability
-    const ipfsUrl = `https://gateway.pinata.cloud/ipfs/${response.data.IpfsHash}`;
+    const ipfsHash = response.data.IpfsHash;
     console.log("✓ Metadata uploaded successfully!");
-    console.log("  IPFS URL:", ipfsUrl);
-    console.log("  IPFS Hash:", response.data.IpfsHash);
-    return ipfsUrl;
+    console.log("  IPFS Hash:", ipfsHash);
+    
+    // Test multiple gateways and return the fastest/most reliable
+    for (const gateway of ipfsGateways) {
+      const testUrl = `${gateway}${ipfsHash}`;
+      try {
+        console.log(`  Testing gateway: ${gateway}`);
+        await axios.head(testUrl, { timeout: 5000 });
+        console.log(`  ✓ Gateway responsive: ${gateway}`);
+        console.log("  Final IPFS URL:", testUrl);
+        return testUrl;
+      } catch (err) {
+        console.log(`  ⚠ Gateway slow/unresponsive: ${gateway}`);
+        continue;
+      }
+    }
+    
+    // Fallback to Pinata gateway if others fail
+    const fallbackUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
+    console.log("  Using Pinata gateway as fallback:", fallbackUrl);
+    return fallbackUrl;
     
   } catch (error) {
     console.error("Failed to upload to IPFS:", error.response?.data || error.message);
-    console.log("Using fallback metadata URL...");
-    return `https://launchium.app/api/metadata/default.json`;
+    console.log("Creating robust fallback metadata...");
+    
+    // Create a more comprehensive fallback
+    const fallbackMetadata = {
+      name: jsonData.name || "Launchium Token",
+      symbol: jsonData.symbol || "LAUNCH", 
+      description: jsonData.description || "Token created with Launchium",
+      image: jsonData.image || DEFAULT_LOGO,
+      external_url: "https://launchium.app",
+      attributes: [
+        { trait_type: "Platform", value: "Launchium" },
+        { trait_type: "Status", value: "Fallback Metadata" }
+      ]
+    };
+    
+    return `data:application/json;base64,${Buffer.from(JSON.stringify(fallbackMetadata)).toString('base64')}`;
   }
 }
 
