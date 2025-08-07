@@ -93,7 +93,27 @@ async function uploadLogoToIPFS(logoData) {
             name: `Token Logo - ${logoData.name || 'logo'}`,
             keyvalues: {
                 type: 'logo',
-                platform: 'Launchium'
+                platform: 'Launchium',
+                cors: 'enabled',
+                access: 'public'
+            }
+        }));
+        
+        // Add pinataOptions for better accessibility
+        formData.append('pinataOptions', JSON.stringify({
+            cidVersion: 1,
+            wrapWithDirectory: false,
+            customPinPolicy: {
+                regions: [
+                    {
+                        id: 'FRA1',
+                        desiredReplicationCount: 2
+                    },
+                    {
+                        id: 'NYC1', 
+                        desiredReplicationCount: 2
+                    }
+                ]
             }
         }));
 

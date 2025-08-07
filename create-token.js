@@ -280,13 +280,44 @@ async function createLaunchiumToken() {
     
     console.log("\n📝 Step 1/6: Preparing metadata structure...");
     
+    // Detect actual image type from URL/extension
+    const getImageType = (url) => {
+      if (!url) return "image/png";
+      const ext = url.split('.').pop()?.toLowerCase();
+      const typeMap = {
+        'png': 'image/png',
+        'jpg': 'image/jpeg', 
+        'jpeg': 'image/jpeg',
+        'gif': 'image/gif',
+        'webp': 'image/webp',
+        'svg': 'image/svg+xml'
+      };
+      return typeMap[ext] || "image/png";
+    };
+
+    const imageType = getImageType(tokenDetails.logoUrl);
+    console.log("  Image URL:", tokenDetails.logoUrl);
+    console.log("  Detected image type:", imageType);
+    
     const metadataJson = {
+      // Standard fields
       name: tokenDetails.name,
       symbol: tokenDetails.symbol,
       description: tokenDetails.description,
-      image: tokenDetails.logoUrl,
+      
+      // Multiple image field formats for platform compatibility
+      image: tokenDetails.logoUrl,           // Standard field
+      image_url: tokenDetails.logoUrl,       // Alternative field
+      icon: tokenDetails.logoUrl,            // RugCheck preference  
+      logo: tokenDetails.logoUrl,            // Birdeye preference
+      
       external_url: tokenDetails.website,
       animation_url: "",
+      
+      // Platform-specific fields
+      website: tokenDetails.website,         // Direct website field
+      twitter: tokenDetails.twitter,         // Direct twitter field
+      
       attributes: [
         {
           trait_type: "Authority",
@@ -313,6 +344,10 @@ async function createLaunchiumToken() {
           value: tokenDetails.twitter
         },
         {
+          trait_type: "Website",
+          value: tokenDetails.website
+        },
+        {
           trait_type: "Created",
           value: new Date().toISOString()
         }
@@ -321,14 +356,15 @@ async function createLaunchiumToken() {
         category: "fungible",
         creators: [
           {
-            address: "Launchium Token Authority",
+            address: "Launchium Token Authority", 
             share: 100
           }
         ],
         files: [
           {
             uri: tokenDetails.logoUrl,
-            type: "image/png"
+            type: imageType,                   // Dynamic type detection
+            cdn: true                          // IPFS CDN hint
           }
         ]
       },
