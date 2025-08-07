@@ -1750,30 +1750,305 @@
             
             // Check for Phantom
             if (typeof window.solana !== 'undefined' && window.solana.isPhantom) {
-                wallets.push({ name: 'Phantom', provider: window.solana });
+                wallets.push({ 
+                    name: 'Phantom', 
+                    provider: window.solana,
+                    icon: '👻',
+                    url: 'https://phantom.app'
+                });
             }
             
             // Check for Solflare
             if (typeof window.solflare !== 'undefined') {
-                wallets.push({ name: 'Solflare', provider: window.solflare });
+                wallets.push({ 
+                    name: 'Solflare', 
+                    provider: window.solflare,
+                    icon: '🔥',
+                    url: 'https://solflare.com'
+                });
+            }
+            
+            // Check for Backpack
+            if (typeof window.backpack !== 'undefined') {
+                wallets.push({ 
+                    name: 'Backpack', 
+                    provider: window.backpack,
+                    icon: '🎒',
+                    url: 'https://backpack.app'
+                });
             }
             
             // Check for Coinbase
             if (typeof window.coinbaseSolana !== 'undefined') {
-                wallets.push({ name: 'Coinbase Wallet', provider: window.coinbaseSolana });
+                wallets.push({ 
+                    name: 'Coinbase Wallet', 
+                    provider: window.coinbaseSolana,
+                    icon: '🏛️',
+                    url: 'https://wallet.coinbase.com'
+                });
             }
             
             // Check for Trust Wallet
             if (typeof window.trustWallet !== 'undefined' && window.trustWallet.solana) {
-                wallets.push({ name: 'Trust Wallet', provider: window.trustWallet.solana });
+                wallets.push({ 
+                    name: 'Trust Wallet', 
+                    provider: window.trustWallet.solana,
+                    icon: '🛡️',
+                    url: 'https://trustwallet.com'
+                });
             }
             
-            // Check for generic solana provider
+            // Check for generic solana provider (fallback)
             if (typeof window.solana !== 'undefined' && !window.solana.isPhantom) {
-                wallets.push({ name: 'Solana Wallet', provider: window.solana });
+                wallets.push({ 
+                    name: 'Unknown Wallet', 
+                    provider: window.solana,
+                    icon: '💳',
+                    url: '#'
+                });
             }
             
             return wallets;
+        }
+
+        // Wallet install options for when no wallet is detected
+        async function showWalletInstallOptions() {
+            const popularWallets = [
+                { name: 'Phantom', icon: '👻', url: 'https://phantom.app/download', mobile: 'https://phantom.app/ul/browse/' + encodeURIComponent(window.location.href) },
+                { name: 'Solflare', icon: '🔥', url: 'https://solflare.com/download', mobile: 'https://solflare.com/download' },
+                { name: 'Backpack', icon: '🎒', url: 'https://backpack.app/download', mobile: 'https://backpack.app/download' },
+                { name: 'Coinbase Wallet', icon: '🏛️', url: 'https://wallet.coinbase.com', mobile: 'https://wallet.coinbase.com' }
+            ];
+            
+            return new Promise((resolve) => {
+                const modal = document.createElement('div');
+                modal.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.8);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 10000;
+                    backdrop-filter: blur(5px);
+                `;
+                
+                const content = document.createElement('div');
+                content.style.cssText = `
+                    background: var(--bg-card);
+                    border-radius: 20px;
+                    padding: 30px;
+                    max-width: 450px;
+                    width: 90%;
+                    border: 1px solid rgba(255, 107, 53, 0.3);
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+                    text-align: center;
+                `;
+                
+                const isCurrentlyMobile = isMobile();
+                
+                content.innerHTML = `
+                    <h3 style="color: var(--text-light); margin: 0 0 15px 0; font-size: 20px;">
+                        No Solana Wallet Detected
+                    </h3>
+                    <p style="color: rgba(255, 255, 255, 0.7); margin: 0 0 25px 0; line-height: 1.5;">
+                        ${isCurrentlyMobile 
+                            ? 'Install a Solana wallet app to connect and create tokens:'
+                            : 'Install a browser extension or wallet to connect:'
+                        }
+                    </p>
+                    <div id="walletInstallOptions" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                    </div>
+                    <button id="dismissInstall" style="
+                        width: 100%;
+                        padding: 12px;
+                        background: rgba(255, 107, 53, 0.1);
+                        border: 1px solid rgba(255, 107, 53, 0.3);
+                        border-radius: 10px;
+                        color: var(--text-light);
+                        cursor: pointer;
+                        font-size: 14px;
+                    ">Close</button>
+                `;
+                
+                const optionsContainer = content.querySelector('#walletInstallOptions');
+                
+                // Add wallet install options
+                popularWallets.forEach((wallet) => {
+                    const option = document.createElement('button');
+                    option.style.cssText = `
+                        display: flex;
+                        align-items: center;
+                        gap: 15px;
+                        padding: 15px;
+                        background: rgba(255, 107, 53, 0.05);
+                        border: 1px solid rgba(255, 107, 53, 0.2);
+                        border-radius: 12px;
+                        color: var(--text-light);
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        font-size: 16px;
+                        width: 100%;
+                    `;
+                    
+                    option.innerHTML = `
+                        <span style="font-size: 24px;">${wallet.icon}</span>
+                        <span style="flex: 1; text-align: left;">${wallet.name}</span>
+                        <span style="font-size: 12px; opacity: 0.7;">Install</span>
+                    `;
+                    
+                    option.addEventListener('mouseover', () => {
+                        option.style.background = 'rgba(255, 107, 53, 0.1)';
+                        option.style.borderColor = 'rgba(255, 107, 53, 0.4)';
+                    });
+                    
+                    option.addEventListener('mouseout', () => {
+                        option.style.background = 'rgba(255, 107, 53, 0.05)';
+                        option.style.borderColor = 'rgba(255, 107, 53, 0.2)';
+                    });
+                    
+                    option.addEventListener('click', () => {
+                        const targetUrl = isCurrentlyMobile ? wallet.mobile : wallet.url;
+                        window.open(targetUrl, '_blank');
+                        document.body.removeChild(modal);
+                        resolve();
+                    });
+                    
+                    optionsContainer.appendChild(option);
+                });
+                
+                // Close button
+                content.querySelector('#dismissInstall').addEventListener('click', () => {
+                    document.body.removeChild(modal);
+                    resolve();
+                });
+                
+                modal.appendChild(content);
+                document.body.appendChild(modal);
+                
+                // Close on outside click
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        document.body.removeChild(modal);
+                        resolve();
+                    }
+                });
+            });
+        }
+
+        // Wallet selector UI
+        async function showWalletSelector(wallets) {
+            return new Promise((resolve) => {
+                // Create modal
+                const modal = document.createElement('div');
+                modal.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.8);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 10000;
+                    backdrop-filter: blur(5px);
+                `;
+                
+                const content = document.createElement('div');
+                content.style.cssText = `
+                    background: var(--bg-card);
+                    border-radius: 20px;
+                    padding: 30px;
+                    max-width: 400px;
+                    width: 90%;
+                    border: 1px solid rgba(255, 107, 53, 0.3);
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+                `;
+                
+                content.innerHTML = `
+                    <h3 style="color: var(--text-light); margin: 0 0 20px 0; text-align: center; font-size: 20px;">
+                        Select Your Wallet
+                    </h3>
+                    <div id="walletOptions" style="display: flex; flex-direction: column; gap: 12px;">
+                    </div>
+                    <button id="cancelWallet" style="
+                        width: 100%;
+                        padding: 12px;
+                        margin-top: 20px;
+                        background: rgba(255, 107, 53, 0.1);
+                        border: 1px solid rgba(255, 107, 53, 0.3);
+                        border-radius: 10px;
+                        color: var(--text-light);
+                        cursor: pointer;
+                        font-size: 14px;
+                    ">Cancel</button>
+                `;
+                
+                const optionsContainer = content.querySelector('#walletOptions');
+                
+                // Add wallet options
+                wallets.forEach((wallet, index) => {
+                    const option = document.createElement('button');
+                    option.style.cssText = `
+                        display: flex;
+                        align-items: center;
+                        gap: 15px;
+                        padding: 15px;
+                        background: rgba(255, 107, 53, 0.05);
+                        border: 1px solid rgba(255, 107, 53, 0.2);
+                        border-radius: 12px;
+                        color: var(--text-light);
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        font-size: 16px;
+                        width: 100%;
+                    `;
+                    
+                    option.innerHTML = `
+                        <span style="font-size: 24px;">${wallet.icon}</span>
+                        <span style="flex: 1; text-align: left;">${wallet.name}</span>
+                        <span style="font-size: 12px; opacity: 0.7;">Connect</span>
+                    `;
+                    
+                    option.addEventListener('mouseover', () => {
+                        option.style.background = 'rgba(255, 107, 53, 0.1)';
+                        option.style.borderColor = 'rgba(255, 107, 53, 0.4)';
+                    });
+                    
+                    option.addEventListener('mouseout', () => {
+                        option.style.background = 'rgba(255, 107, 53, 0.05)';
+                        option.style.borderColor = 'rgba(255, 107, 53, 0.2)';
+                    });
+                    
+                    option.addEventListener('click', () => {
+                        document.body.removeChild(modal);
+                        resolve(wallet);
+                    });
+                    
+                    optionsContainer.appendChild(option);
+                });
+                
+                // Cancel button
+                content.querySelector('#cancelWallet').addEventListener('click', () => {
+                    document.body.removeChild(modal);
+                    resolve(null);
+                });
+                
+                modal.appendChild(content);
+                document.body.appendChild(modal);
+                
+                // Close on outside click
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        document.body.removeChild(modal);
+                        resolve(null);
+                    }
+                });
+            });
         }
 
         // Connect wallet (mobile-friendly)
@@ -1782,48 +2057,25 @@
                 const availableWallets = getAvailableWallets();
                 
                 if (availableWallets.length === 0) {
-                    // No wallet detected
-                    if (isMobile()) {
-                        const userAgent = navigator.userAgent.toLowerCase();
-                        let walletUrl = '';
-                        
-                        if (userAgent.includes('android')) {
-                            // Android deep links
-                            walletUrl = 'https://phantom.app/ul/browse/' + encodeURIComponent(window.location.href) + '?ref=launchium';
-                        } else if (userAgent.includes('iphone') || userAgent.includes('ipad')) {
-                            // iOS deep links
-                            walletUrl = 'https://phantom.app/ul/browse/' + encodeURIComponent(window.location.href) + '?ref=launchium';
-                        } else {
-                            walletUrl = 'https://phantom.app/download';
-                        }
-                        
-                        const userChoice = confirm(
-                            'Mobile wallet not detected!\n\n' +
-                            'You need to install the Phantom wallet app and open this site from within the app.\n\n' +
-                            'Would you like to be redirected to Phantom?'
-                        );
-                        
-                        if (userChoice) {
-                            window.open(walletUrl, '_blank');
-                        }
-                        return;
-                    } else {
-                        // Desktop - suggest extension
-                        const userChoice = confirm(
-                            'Solana wallet not detected!\n\n' +
-                            'You need to install the Phantom browser extension.\n\n' +
-                            'Would you like to be redirected to Phantom?'
-                        );
-                        
-                        if (userChoice) {
-                            window.open('https://phantom.app/download', '_blank');
-                        }
-                        return;
+                    // No wallet detected - show install options
+                    await showWalletInstallOptions();
+                    return;
+                }
+                
+                // Select wallet (prompt user if multiple)
+                let selectedWallet;
+                
+                if (availableWallets.length === 1) {
+                    // Only one wallet available
+                    selectedWallet = availableWallets[0];
+                } else {
+                    // Multiple wallets - show selection
+                    selectedWallet = await showWalletSelector(availableWallets);
+                    if (!selectedWallet) {
+                        return; // User cancelled
                     }
                 }
                 
-                // Use the first available wallet
-                const selectedWallet = availableWallets[0];
                 console.log(`Connecting to ${selectedWallet.name}...`);
                 
                 const response = await selectedWallet.provider.connect();
