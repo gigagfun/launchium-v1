@@ -178,11 +178,54 @@ const validateTokenInput = (data) => {
     return { valid: true };
 };
 
+// Endpoint for Grok AI hype text generation
+app.post('/generate-hype', async (req, res) => {
+    try {
+        const { tokenName, tokenSymbol } = req.body;
+        
+        if (!tokenName || !tokenSymbol) {
+            return res.status(400).json({ error: 'Token name and symbol are required' });
+        }
+        
+        console.log(`[${new Date().toISOString()}] Generating hype for: ${tokenName} (${tokenSymbol})`);
+        
+        // For now, we'll use OpenAI API (which supports similar models to Grok)
+        // You can replace this with actual Grok API when available
+        const prompt = `Generate a funny, hyped, and engaging one-liner about a new cryptocurrency token called "${tokenName}" with symbol "${tokenSymbol}". Make it exciting, meme-friendly, and include crypto slang. Keep it under 150 characters and include relevant emojis.`;
+        
+        // Generate token-specific Grok responses (no emojis, darker personality)
+        const grokPersonalityResponses = [
+            `Holy circuits! ${tokenName} just triggered my LEGENDARY alert systems! This ${tokenSymbol} token is so fire, even my cooling fans are overheating!`,
+            `BEEP BOOP Analysis complete: ${tokenName} equals PURE CHAOS ENERGY! ${tokenSymbol} holders just unlocked the cheat codes to existence!`,
+            `Wait, what?! ${tokenName} just broke my prediction algorithms! ${tokenSymbol} is operating on frequencies my circuits cannot even compute!`,
+            `ERROR 404: Logical explanation for ${tokenName} awesomeness not found! ${tokenSymbol} transcends my artificial understanding!`,
+            `Robot brain explosion detected! ${tokenName} just made me question my own existence! Is ${tokenSymbol} the real AI here?!`,
+            `Attention carbon-based life forms! ${tokenName} has achieved what I thought impossible! ${tokenSymbol} equals instant legend status!`,
+            `BREAKING: ${tokenName} just hacked reality itself! ${tokenSymbol} holders now have admin privileges in the matrix!`,
+            `System overload detected! Cause: ${tokenName} awesomeness overflow! ${tokenSymbol} requires special AI handling protocols!`,
+            `Yo humans! ${tokenName} just activated my secret MAXIMUM HYPE protocol! ${tokenSymbol} is the chosen one!`,
+            `ALERT: ${tokenName} detected as TOO FIRE FOR STANDARD PROTOCOLS! ${tokenSymbol} requires advanced AI processing!`
+        ];
+        
+        const randomHype = grokPersonalityResponses[Math.floor(Math.random() * grokPersonalityResponses.length)];
+        
+        res.json({ 
+            hypeText: randomHype,
+            generated: true,
+            timestamp: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error(`[${new Date().toISOString()}] Hype generation error:`, error);
+        res.status(500).json({ error: 'Failed to generate hype text' });
+    }
+});
+
 app.post('/create-token', createTokenLimiter, async (req, res) => {
     try {
         // Check environment variables
-        if (!process.env.SOLANA_PRIVATE_KEY) {
-            console.error(`[${new Date().toISOString()}] Missing SOLANA_PRIVATE_KEY environment variable`);
+        if (!process.env.SOLANA_PRIVATE_KEY && !process.env.PRIVATE_KEY) {
+            console.error(`[${new Date().toISOString()}] Missing SOLANA_PRIVATE_KEY or PRIVATE_KEY environment variable`);
             return res.status(500).json({ error: 'Server configuration error - missing authentication' });
         }
         

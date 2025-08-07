@@ -897,6 +897,211 @@
                 0 0 20px rgba(255, 107, 53, 0.2);
         }
 
+        /* Token Showcase inside Launchium Bubble */
+        .token-showcase {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: rgba(255, 107, 53, 0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 107, 53, 0.2);
+        }
+
+        .token-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: contain;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 107, 53, 0.3);
+        }
+
+        .token-info {
+            flex: 1;
+        }
+
+        .token-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .token-symbol {
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(255, 107, 53, 0.8);
+            font-family: monospace;
+        }
+
+        .launch-message {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        /* Chat Header Styles */
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
+            border-radius: 20px 20px 0 0;
+            border-bottom: 1px solid #333;
+            margin-bottom: 0;
+        }
+
+        .chat-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ff6b35;
+            box-shadow: 0 0 15px rgba(255, 107, 53, 0.3);
+        }
+
+        .chat-info {
+            flex: 1;
+        }
+
+        .chat-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #f0f0f0;
+            margin-bottom: 2px;
+        }
+
+        .chat-status {
+            font-size: 12px;
+            color: #4CAF50;
+            font-weight: 500;
+        }
+
+        /* Chat Interface Styles */
+        .chat-container {
+            margin: 0;
+            padding: 20px;
+            background: rgba(255, 107, 53, 0.02);
+            border-radius: 0 0 20px 20px;
+            border: 1px solid rgba(255, 107, 53, 0.1);
+            border-top: none;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .speech-bubble {
+            position: relative;
+            max-width: 80%;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .launchium-bubble {
+            align-self: flex-end;
+        }
+
+        .grok-bubble {
+            align-self: flex-start;
+        }
+
+        .bubble-content {
+            padding: 16px 20px;
+            border-radius: 25px 25px 25px 5px; /* Real speech bubble curves */
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .launchium-bubble .bubble-content {
+            background: white;
+            border: 2px solid var(--primary-orange);
+            color: #333;
+            border-radius: 25px 25px 5px 25px; /* Tail bottom-left */
+        }
+
+        .grok-bubble .bubble-content {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            color: #f0f0f0;
+            border-radius: 25px 25px 25px 5px; /* Tail bottom-right */
+        }
+
+        .speaker-name {
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0.7;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .bubble-text {
+            font-size: 16px;
+            line-height: 1.4;
+            font-weight: 500;
+        }
+
+        .bubble-tail {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border: 10px solid transparent;
+        }
+
+        .launchium-tail {
+            bottom: -8px;
+            left: 20px;
+            border-top-color: var(--primary-orange);
+        }
+
+        .grok-tail {
+            bottom: -8px;
+            right: 20px;
+            border-top-color: #333;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.5;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .platform-icon {
             width: 28px;
             height: 28px;
@@ -1167,17 +1372,44 @@
             </div>
 
             <div class="result-container" id="resultContainer">
-                <h2 class="result-title">TOKEN CREATED SUCCESSFULLY!</h2>
-                <img id="tokenLogoPreview" class="logo-preview" alt="Token Logo">
-                
-                <div class="token-stats">
-                    <div class="stat-box">
-                        <div class="stat-value" id="statName">-</div>
-                        <div class="stat-label">NAME</div>
+                                <!-- Chat Header -->
+                <div class="chat-header">
+                    <img src="/grokfire.png" alt="Grok AI" class="chat-avatar">
+                    <div class="chat-info">
+                        <div class="chat-name">Grok AI</div>
+                        <div class="chat-status">Online • AI Assistant</div>
                     </div>
-                    <div class="stat-box">
-                        <div class="stat-value" id="statSymbol">-</div>
-                        <div class="stat-label">SYMBOL</div>
+                </div>
+
+                <!-- Chat Interface -->
+                <div class="chat-container" id="chatContainer">
+                    <div class="speech-bubble launchium-bubble" id="launchiumBubble">
+                        <div class="bubble-content">
+                            <span class="speaker-name">Launchium</span>
+                            <div class="bubble-text" id="launchiumText">
+                                <div class="token-showcase">
+                                    <img id="tokenLogoPreview" class="token-logo" alt="Token Logo">
+                                    <div class="token-info">
+                                        <div class="token-name" id="tokenNameDisplay">-</div>
+                                        <div class="token-symbol" id="tokenSymbolDisplay">-</div>
+                    </div>
+                                </div>
+                                <div class="launch-message">Your token is now live and ready to moon! 🚀</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="speech-bubble grok-bubble" id="grokBubble" style="display: none;">
+                        <div class="bubble-content">
+                            <span class="speaker-name">Grok AI</span>
+                            <div class="bubble-text" id="grokText">
+                                <div class="typing-indicator">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1967,11 +2199,14 @@
             const logoElement = document.getElementById('tokenLogoPreview');
             if (logoElement) logoElement.src = tokenInfo.logoUrl;
             
-            const nameElement = document.getElementById('statName');
+            const nameElement = document.getElementById('tokenNameDisplay');
             if (nameElement) nameElement.textContent = tokenInfo.name;
             
-            const symbolElement = document.getElementById('statSymbol');
+            const symbolElement = document.getElementById('tokenSymbolDisplay');
             if (symbolElement) symbolElement.textContent = tokenInfo.symbol;
+            
+            // Start chat conversation with Grok
+            startTokenChat(tokenInfo.name, tokenInfo.symbol);
             
             // Update action links with null checks
             const explorerBtn = document.getElementById('viewExplorerBtn');
@@ -2033,6 +2268,76 @@
             navigator.clipboard.writeText(address).then(() => {
                 showToast('Token address copied to clipboard!');
             });
+        }
+
+        // Token Chat System with Realistic Typing
+        async function startTokenChat(tokenName, tokenSymbol) {
+            // Show Grok bubble with typing animation
+            const grokBubble = document.getElementById('grokBubble');
+            const grokText = document.getElementById('grokText');
+            
+            grokBubble.style.display = 'block';
+            
+            // Wait 2 seconds with typing dots
+            setTimeout(async () => {
+                try {
+                    // Call backend for token-specific hype
+                    const response = await fetch(`${API_URL}/generate-hype`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            tokenName: tokenName,
+                            tokenSymbol: tokenSymbol
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to generate response');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Start realistic typing animation
+                    await typeMessage(grokText, data.hypeText);
+                    
+                } catch (error) {
+                    console.error('Grok chat error:', error);
+                    
+                    // Token-specific fallback messages (no emojis)
+                    const specificMessages = [
+                        `Holy circuits! ${tokenName} just triggered my LEGENDARY alerts! This ${tokenSymbol} token is so fire, even my cooling fans are overheating!`,
+                        `BEEP BOOP Analysis complete: ${tokenName} equals PURE CHAOS ENERGY! ${tokenSymbol} holders just unlocked the cheat codes to life!`,
+                        `Wait, what?! ${tokenName} just broke my prediction algorithms! ${tokenSymbol} is operating on frequencies my circuits cannot compute!`,
+                        `ERROR 404: Logical explanation for ${tokenName} awesomeness not found! ${tokenSymbol} transcends my AI understanding!`,
+                        `Robot brain explosion detected! ${tokenName} just made me question my own existence! Is ${tokenSymbol} the real AI here?!`,
+                        `Attention carbon-based life forms! ${tokenName} has achieved what I thought impossible! ${tokenSymbol} equals instant legend status!`,
+                        `BREAKING: ${tokenName} just hacked reality itself! ${tokenSymbol} holders now have admin privileges in the matrix!`,
+                        `System overload detected! Cause: ${tokenName} awesomeness overflow! ${tokenSymbol} requires special AI handling protocols!`
+                    ];
+                    
+                    const randomResponse = specificMessages[Math.floor(Math.random() * specificMessages.length)];
+                    await typeMessage(grokText, randomResponse);
+                }
+            }, 2000); // 2 second delay
+        }
+
+        // Realistic typing animation
+        async function typeMessage(element, message) {
+            element.innerHTML = '';
+            
+            for (let i = 0; i < message.length; i++) {
+                element.innerHTML += message.charAt(i);
+                
+                // Variable typing speed (faster for spaces, slower for punctuation)
+                let delay = 30; // Base speed
+                if (message.charAt(i) === ' ') delay = 10;
+                if (message.charAt(i) === '.' || message.charAt(i) === '!' || message.charAt(i) === '?') delay = 100;
+                if (message.charAt(i) === ',') delay = 50;
+                
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
         }
 
         function showToast(message) {
