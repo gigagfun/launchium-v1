@@ -104,8 +104,8 @@ async function uploadLogoToIPFS(logoData) {
                 maxBodyLength: Infinity,
                 headers: {
                     ...formData.getHeaders(),
-                    'pinata_api_key': process.env.PINATA_API_KEY,
-                    'pinata_secret_api_key': process.env.PINATA_SECRET_KEY
+                    'pinata_api_key': process.env.PINATA_API_KEY?.trim(),
+                    'pinata_secret_api_key': process.env.PINATA_SECRET_KEY?.trim()
                 },
                 timeout: 30000
             }

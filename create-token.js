@@ -39,11 +39,12 @@ dotenv.config();
 
 // Security wrapper for private key
 const getPrivateKey = () => {
-  const key = process.env.PRIVATE_KEY;
+  const key = process.env.SOLANA_PRIVATE_KEY || process.env.PRIVATE_KEY;
   if (!key) {
-    throw new Error('Private key not configured');
+    throw new Error('Private key not configured - missing SOLANA_PRIVATE_KEY');
   }
-  return key;
+  // Sanitize the key (remove whitespace/newlines)
+  return key.trim();
 };
 
 const PINATA_API_KEY = process.env.PINATA_API_KEY;
@@ -296,9 +297,19 @@ async function createLaunchiumToken() {
     connection = await getConnection();
     
     try {
-      payer = Keypair.fromSecretKey(bs58.decode(getPrivateKey()));
+      const privateKeyString = getPrivateKey();
+      console.log(`[${new Date().toISOString()}] Private key loaded, length:`, privateKeyString.length);
+      
+      // Validate private key format
+      if (!privateKeyString || privateKeyString.length < 80) {
+        throw new Error("Private key appears to be too short or invalid");
+      }
+      
+      payer = Keypair.fromSecretKey(bs58.decode(privateKeyString));
+      console.log(`[${new Date().toISOString()}] Keypair created successfully`);
     } catch (error) {
-      throw new Error("Invalid private key configuration");
+      console.error(`[${new Date().toISOString()}] Private key error:`, error.message);
+      throw new Error(`Invalid private key configuration: ${error.message}`);
     }
     
     console.log("Wallet Address:", payer.publicKey.toBase58());
