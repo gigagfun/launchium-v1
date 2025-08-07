@@ -5,7 +5,7 @@ Procfile
 .railway/
 .railway*
 
-# Node.js backend stuff - But keep public assets
+# Node.js backend stuff
 node_modules/
 package-lock.json
 
@@ -23,5 +23,5 @@ token-*.json
 # Railway specific
 .railwayignore
 
-# Keep public/ for Railway but don't serve from Vercel
-public/
+# Now let public/ be accessible to Vercel for fallback
+# public/
