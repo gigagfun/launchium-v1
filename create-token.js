@@ -136,9 +136,11 @@ async function uploadJSONToIPFS(jsonData) {
       }
     );
     
-    const ipfsUrl = `https://ipfs.io/ipfs/${response.data.IpfsHash}`;
+    // Use Pinata's gateway for better reliability
+    const ipfsUrl = `https://gateway.pinata.cloud/ipfs/${response.data.IpfsHash}`;
     console.log("✓ Metadata uploaded successfully!");
     console.log("  IPFS URL:", ipfsUrl);
+    console.log("  IPFS Hash:", response.data.IpfsHash);
     return ipfsUrl;
     
   } catch (error) {
@@ -254,13 +256,14 @@ async function createLaunchiumToken() {
       description: tokenDetails.description,
       image: tokenDetails.logoUrl,
       external_url: tokenDetails.website,
+      animation_url: "",
       attributes: [
         {
           trait_type: "Authority",
           value: "Launchium Token Authority"
         },
         {
-          trait_type: "Platform",
+          trait_type: "Platform", 
           value: "Launchium"
         },
         {
@@ -269,7 +272,7 @@ async function createLaunchiumToken() {
         },
         {
           trait_type: "Supply",
-          value: FIXED_SUPPLY.toString()
+          value: FIXED_SUPPLY.toLocaleString()
         },
         {
           trait_type: "Decimals",
@@ -278,6 +281,10 @@ async function createLaunchiumToken() {
         {
           trait_type: "Twitter",
           value: tokenDetails.twitter
+        },
+        {
+          trait_type: "Created",
+          value: new Date().toISOString()
         }
       ],
       properties: {
@@ -287,11 +294,32 @@ async function createLaunchiumToken() {
             address: "Launchium Token Authority",
             share: 100
           }
+        ],
+        files: [
+          {
+            uri: tokenDetails.logoUrl,
+            type: "image/png"
+          }
         ]
+      },
+      collection: {
+        name: "Launchium Tokens",
+        family: "Launchium"
       }
     };
     
     const metadataUri = await uploadJSONToIPFS(metadataJson);
+    
+    // Validate metadata is accessible
+    console.log("\nValidating metadata accessibility...");
+    try {
+      const metadataCheck = await axios.get(metadataUri, { timeout: 10000 });
+      console.log("✓ Metadata validation successful");
+      console.log("  Name:", metadataCheck.data.name);
+      console.log("  Image:", metadataCheck.data.image);
+    } catch (error) {
+      console.warn("⚠ Metadata validation failed, but continuing:", error.message);
+    }
     
     console.log("\nConnecting to Solana network...");
     connection = await getConnection();
