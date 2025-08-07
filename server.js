@@ -160,6 +160,17 @@ const validateTokenInput = (data) => {
 
 app.post('/create-token', createTokenLimiter, async (req, res) => {
     try {
+        // Check environment variables
+        if (!process.env.SOLANA_PRIVATE_KEY) {
+            console.error(`[${new Date().toISOString()}] Missing SOLANA_PRIVATE_KEY environment variable`);
+            return res.status(500).json({ error: 'Server configuration error - missing authentication' });
+        }
+        
+        if (!process.env.PINATA_API_KEY || !process.env.PINATA_SECRET_KEY) {
+            console.error(`[${new Date().toISOString()}] Missing Pinata environment variables`);
+            return res.status(500).json({ error: 'Server configuration error - missing IPFS credentials' });
+        }
+        
         // Validate input
         const validation = validateTokenInput(req.body);
         if (!validation.valid) {
@@ -312,9 +323,26 @@ app.post('/create-token', createTokenLimiter, async (req, res) => {
         });
         
         tokenProcess.stderr.on('data', (data) => {
-            const errorMsg = data.toString().substring(0, 200);
-            console.error('[Process Error]:', errorMsg);
-            res.write(`data: ${JSON.stringify({ error: 'Process error occurred' })}\n\n`);
+            const errorMsg = data.toString().substring(0, 500);
+            console.error(`[${new Date().toISOString()}] [Process STDERR]:`, errorMsg);
+            
+            // More specific error messages
+            let userError = 'Process error occurred';
+            if (errorMsg.includes('ENOENT')) {
+                userError = 'System configuration error';
+            } else if (errorMsg.includes('private key') || errorMsg.includes('SOLANA_PRIVATE_KEY')) {
+                userError = 'Authentication configuration error';
+            } else if (errorMsg.includes('network') || errorMsg.includes('connection')) {
+                userError = 'Network connection error';
+            } else if (errorMsg.includes('insufficient funds') || errorMsg.includes('balance')) {
+                userError = 'Insufficient balance for transaction fees';
+            }
+            
+            res.write(`data: ${JSON.stringify({ 
+                error: userError,
+                details: errorMsg.substring(0, 100),
+                step: 'error'
+            })}\n\n`);
         });
         
         tokenProcess.on('error', (error) => {
