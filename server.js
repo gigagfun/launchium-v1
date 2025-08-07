@@ -214,6 +214,7 @@ app.post('/create-token', createTokenLimiter, async (req, res) => {
         let tokenInfo = {};
         let inputsSent = 0;
         let processTimeout;
+        let processReady = false;
         
         // Set process timeout
         processTimeout = setTimeout(() => {
@@ -231,7 +232,12 @@ app.post('/create-token', createTokenLimiter, async (req, res) => {
             
             // Sanitize output before logging
             const sanitizedOutput = output.replace(/[<>]/g, '');
-            console.log('[Process]:', sanitizedOutput.substring(0, 200));
+            console.log(`[${new Date().toISOString()}] [Process]:`, sanitizedOutput.substring(0, 300));
+            
+            // Debug input tracking
+            if (sanitizedOutput.includes('Enter') || sanitizedOutput.includes('?')) {
+                console.log(`[${new Date().toISOString()}] [PROMPT DETECTED] inputsSent: ${inputsSent}`);
+            }
             
             // Send inputs based on prompts
             if (output.includes('Enter Token Name') && inputsSent === 0) {
