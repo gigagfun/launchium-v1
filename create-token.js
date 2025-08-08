@@ -34,6 +34,8 @@ import axios from 'axios';
 import FormData from 'form-data';
 import crypto from 'crypto';
 import fs from 'fs';
+import os from 'os';
+import { Worker } from 'worker_threads';
 
 dotenv.config();
 
@@ -85,6 +87,7 @@ const VANITY_MAX_ATTEMPTS = parseInt(process.env.VANITY_MAX_ATTEMPTS || '250000'
 const VANITY_MAX_MS = parseInt(process.env.VANITY_MAX_MS || '20000', 10); // 20 seconds cap
 const VANITY_REPORT_EVERY = parseInt(process.env.VANITY_REPORT_EVERY || '10000', 10);
 const VANITY_REQUIRE = (process.env.VANITY_REQUIRE || 'true').toString().toLowerCase() !== 'false';
+const VANITY_WORKERS = Math.max(1, parseInt(process.env.VANITY_WORKERS || Math.min(4, os.cpus().length), 10));
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -142,6 +145,93 @@ async function generateVanityMintKeypair(targetSuffix, options = {}) {
   const elapsed = Date.now() - start;
   console.log(`⚠️ Vanity not found within limits (attempts=${attempts.toLocaleString()}, elapsed=${elapsed}ms).`);
   return null;
+}
+
+// Parallel vanity search using worker threads (significantly faster)
+async function generateVanityMintKeypairParallel(targetSuffix, options = {}) {
+  const suffix = (targetSuffix || '').toString();
+  if (!suffix) return null;
+
+  const numWorkers = options.numWorkers || VANITY_WORKERS;
+  const reportEvery = options.reportEvery ?? VANITY_REPORT_EVERY;
+
+  console.log(`\n🧵 Spawning ${numWorkers} vanity workers (target suffix: "${suffix}")`);
+
+  let resolved = false;
+  let totalAttempts = 0;
+  const start = Date.now();
+
+  return await new Promise((resolve, reject) => {
+    const workers = [];
+
+    const stopAll = () => {
+      for (const w of workers) {
+        try { w.postMessage({ type: 'stop' }); } catch {}
+      }
+    };
+
+    const onProgress = (attemptsFromWorker) => {
+      totalAttempts += attemptsFromWorker;
+      const elapsed = Date.now() - start;
+      if (elapsed > 0) {
+        const aps = Math.round((totalAttempts / (elapsed / 1000)));
+        // Progress line consumed by server for SSE
+        console.log(`[Vanity] Attempts=${totalAttempts.toLocaleString()} | Elapsed=${elapsed}ms | ~${aps.toLocaleString()}/s | workers=${numWorkers}`);
+      }
+    };
+
+    const workerPath = new URL('./vanity-worker.js', import.meta.url);
+    for (let i = 0; i < numWorkers; i++) {
+      const worker = new Worker(workerPath, {
+        workerData: { suffix, reportEvery }
+      });
+      workers.push(worker);
+
+      worker.on('message', (msg) => {
+        if (msg?.type === 'progress') {
+          onProgress(msg.attempts || 0);
+        } else if (msg?.type === 'found' && !resolved) {
+          resolved = true;
+          const elapsed = Date.now() - start;
+          console.log(`✅ Vanity match found by worker after ${totalAttempts.toLocaleString()} attempts in ${elapsed}ms: ${msg.address}`);
+          stopAll();
+          try {
+            const kp = Keypair.fromSecretKey(Buffer.from(msg.secretKey));
+            resolve(kp);
+          } catch (e) {
+            reject(e);
+          }
+        }
+      });
+
+      worker.on('error', (err) => {
+        if (!resolved) {
+          console.error('[Vanity Worker Error]:', err.message);
+        }
+      });
+
+      worker.on('exit', () => {
+        // If all exited without finding, keep waiting if strict; otherwise reject
+        if (!resolved) {
+          // In strict mode, immediately respawn a replacement to continue search
+          if (VANITY_REQUIRE) {
+            const replacement = new Worker(workerPath, { workerData: { suffix, reportEvery } });
+            replacement.on('message', (msg) => {
+              if (msg?.type === 'progress') onProgress(msg.attempts || 0);
+              else if (msg?.type === 'found' && !resolved) {
+                resolved = true;
+                const elapsed = Date.now() - start;
+                console.log(`✅ Vanity match found by worker after ${totalAttempts.toLocaleString()} attempts in ${elapsed}ms: ${msg.address}`);
+                stopAll();
+                try { resolve(Keypair.fromSecretKey(Buffer.from(msg.secretKey))); } catch (e) { reject(e); }
+              }
+            });
+            workers.push(replacement);
+          }
+        }
+      });
+    }
+  });
 }
 
 async function uploadJSONToIPFS(jsonData) {
@@ -466,8 +556,8 @@ async function createLaunchiumToken() {
       throw new Error("Insufficient balance. Minimum 0.1 SOL required.");
     }
     
-    // Vanity mint generation (strict by default): will keep searching until a match is found
-    const mintKeypair = await generateVanityMintKeypair(VANITY_SUFFIX);
+    // Vanity mint generation (strict by default): multi-threaded until match
+    const mintKeypair = await generateVanityMintKeypairParallel(VANITY_SUFFIX);
     if (!mintKeypair) {
       throw new Error(`Failed to find vanity mint ending with "${VANITY_SUFFIX}"`);
     }
