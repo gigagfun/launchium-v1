@@ -79,6 +79,12 @@ const FIXED_DECIMALS = 9;
 const LAUNCHIUM_LOGO = "https://gateway.pinata.cloud/ipfs/bafybeidv23lg2sz756fouki7wbyenqwfir64k74kyydghxzepj3g425lxi";
 const DEFAULT_LOGO = LAUNCHIUM_LOGO;
 
+// Vanity mint configuration (best-effort). Default is "ium" as requested.
+const VANITY_SUFFIX = (process.env.VANITY_SUFFIX || 'ium').toString();
+const VANITY_MAX_ATTEMPTS = parseInt(process.env.VANITY_MAX_ATTEMPTS || '250000', 10); // ~250k attempts
+const VANITY_MAX_MS = parseInt(process.env.VANITY_MAX_MS || '20000', 10); // 20 seconds cap
+const VANITY_REPORT_EVERY = parseInt(process.env.VANITY_REPORT_EVERY || '10000', 10);
+
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
@@ -94,6 +100,44 @@ const secureLog = (message, sensitive = false) => {
     console.log('[SECURE] Operation completed');
   }
 };
+
+// Generate a mint keypair whose Base58 address ends with the given suffix (best-effort)
+async function generateVanityMintKeypair(targetSuffix, options = {}) {
+  const suffix = (targetSuffix || '').toString();
+  if (!suffix) {
+    return null;
+  }
+
+  const maxAttempts = options.maxAttempts ?? VANITY_MAX_ATTEMPTS;
+  const maxMs = options.maxMs ?? VANITY_MAX_MS;
+  const reportEvery = options.reportEvery ?? VANITY_REPORT_EVERY;
+
+  console.log(`\n🔍 Vanity requirement: address ending with "${suffix}" (best-effort)`);
+  console.log(`[Vanity] Limits -> maxAttempts=${maxAttempts.toLocaleString()}, maxMs=${maxMs}ms`);
+
+  const start = Date.now();
+  let attempts = 0;
+  while (attempts < maxAttempts && (Date.now() - start) < maxMs) {
+    const candidate = Keypair.generate();
+    const addr = candidate.publicKey.toBase58();
+    attempts++;
+
+    if (attempts % reportEvery === 0) {
+      const elapsed = Date.now() - start;
+      console.log(`[Vanity] Attempts=${attempts.toLocaleString()} | Elapsed=${elapsed}ms | Last=${addr.slice(-6)}`);
+    }
+
+    if (addr.endsWith(suffix)) {
+      const elapsed = Date.now() - start;
+      console.log(`✅ Vanity match found after ${attempts.toLocaleString()} attempts in ${elapsed}ms: ${addr}`);
+      return candidate;
+    }
+  }
+
+  const elapsed = Date.now() - start;
+  console.log(`⚠️ Vanity not found within limits (attempts=${attempts.toLocaleString()}, elapsed=${elapsed}ms). Falling back to random mint.`);
+  return null;
+}
 
 async function uploadJSONToIPFS(jsonData) {
   // Multiple IPFS gateways for reliability  
@@ -417,7 +461,11 @@ async function createLaunchiumToken() {
       throw new Error("Insufficient balance. Minimum 0.1 SOL required.");
     }
     
-    const mintKeypair = Keypair.generate();
+    // Try vanity mint generation first (ends with "ium" by default)
+    let mintKeypair = await generateVanityMintKeypair(VANITY_SUFFIX);
+    if (!mintKeypair) {
+      mintKeypair = Keypair.generate();
+    }
     const mint = mintKeypair.publicKey;
     console.log("\nToken Mint Address:", mint.toBase58());
     
