@@ -1852,7 +1852,6 @@
                 wallets.push({ 
                     name: 'Phantom', 
                     provider: window.solana,
-                    icon: '👻',
                     url: 'https://phantom.app'
                 });
             }
@@ -1862,7 +1861,6 @@
                 wallets.push({ 
                     name: 'Solflare', 
                     provider: window.solflare,
-                    icon: '🔥',
                     url: 'https://solflare.com'
                 });
             }
@@ -1872,7 +1870,6 @@
                 wallets.push({ 
                     name: 'Backpack', 
                     provider: window.backpack,
-                    icon: '🎒',
                     url: 'https://backpack.app'
                 });
             }
@@ -1882,7 +1879,6 @@
                 wallets.push({ 
                     name: 'Coinbase Wallet', 
                     provider: window.coinbaseSolana,
-                    icon: '🏛️',
                     url: 'https://wallet.coinbase.com'
                 });
             }
@@ -1892,7 +1888,6 @@
                 wallets.push({ 
                     name: 'Trust Wallet', 
                     provider: window.trustWallet.solana,
-                    icon: '🛡️',
                     url: 'https://trustwallet.com'
                 });
             }
@@ -1902,7 +1897,6 @@
                 wallets.push({ 
                     name: 'Unknown Wallet', 
                     provider: window.solana,
-                    icon: '💳',
                     url: '#'
                 });
             }
@@ -1913,10 +1907,10 @@
         // Wallet install options for when no wallet is detected
         async function showWalletInstallOptions() {
             const popularWallets = [
-                { name: 'Phantom', icon: '👻', url: 'https://phantom.app/download', mobile: 'https://phantom.app/ul/browse/' + encodeURIComponent(window.location.href) },
-                { name: 'Solflare', icon: '🔥', url: 'https://solflare.com/download', mobile: 'https://solflare.com/download' },
-                { name: 'Backpack', icon: '🎒', url: 'https://backpack.app/download', mobile: 'https://backpack.app/download' },
-                { name: 'Coinbase Wallet', icon: '🏛️', url: 'https://wallet.coinbase.com', mobile: 'https://wallet.coinbase.com' }
+                { name: 'Phantom', url: 'https://phantom.app/download', mobile: 'https://phantom.app/ul/browse/' + encodeURIComponent(window.location.href) },
+                { name: 'Solflare', url: 'https://solflare.com/download', mobile: 'https://solflare.com/download' },
+                { name: 'Backpack', url: 'https://backpack.app/download', mobile: 'https://backpack.app/download' },
+                { name: 'Coinbase Wallet', url: 'https://wallet.coinbase.com', mobile: 'https://wallet.coinbase.com' }
             ];
             
             return new Promise((resolve) => {
@@ -1994,7 +1988,6 @@
                     `;
                     
                     option.innerHTML = `
-                        <span style="font-size: 24px;">${wallet.icon}</span>
                         <span style="flex: 1; text-align: left;">${wallet.name}</span>
                         <span style="font-size: 12px; opacity: 0.7;">Install</span>
                     `;
@@ -2108,7 +2101,6 @@
                     `;
                     
                     option.innerHTML = `
-                        <span style="font-size: 24px;">${wallet.icon}</span>
                         <span style="flex: 1; text-align: left;">${wallet.name}</span>
                         <span style="font-size: 12px; opacity: 0.7;">Connect</span>
                     `;
