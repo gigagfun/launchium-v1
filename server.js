@@ -345,9 +345,12 @@ app.post('/create-token', createTokenLimiter, async (req, res) => {
                 res.write(`data: ${JSON.stringify({ step: 4, status: 'active' })}\n\n`);
             }
 
-            // Vanity progress logs passthrough (optional UX)
+            // Vanity progress logs passthrough (UX)
             if (output.includes('[Vanity] Attempts=')) {
                 res.write(`data: ${JSON.stringify({ step: 3, status: 'active', message: 'Searching vanity mint (ium)...' })}\n\n`);
+            }
+            if (output.includes('Vanity requirement:')) {
+                res.write(`data: ${JSON.stringify({ step: 3, status: 'active', message: 'Vanity mode enabled: strict (no fallback)' })}\n\n`);
             }
             
             if (output.includes('✓ Metadata initialized')) {
