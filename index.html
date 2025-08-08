@@ -1642,6 +1642,30 @@
             </div>
 
             <div class="result-container" id="resultContainer">
+                <!-- Claude AI Security Verification Section -->
+                <div class="claude-verification-container" id="claudeVerificationContainer" style="display: none;">
+                    <div class="verification-header">
+                        <div class="verification-icon">
+                            <img src="/claude-seeklogo.svg" alt="Claude AI" style="width: 100%; height: 100%;">
+                        </div>
+                        <div class="verification-info">
+                            <div class="verification-title">Security Verification</div>
+                            <div class="verification-status" id="verificationStatus">Security being verified by Claude AI...</div>
+                        </div>
+                        <div class="verification-spinner" id="verificationSpinner">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                    <div class="verification-result" id="verificationResult" style="display: none;">
+                        <div class="verification-check">
+                            <img src="/claude-seeklogo.svg" alt="Claude AI Verified" style="width: 100%; height: 100%;">
+                        </div>
+                        <div class="verification-message" id="verificationMessage">
+                            Token security verified by Claude AI. No suspicious patterns detected.
+                        </div>
+                    </div>
+                </div>
+
                                 <!-- Chat Header -->
                 <div class="chat-header">
                     <img src="/grokfire.png" alt="Grok AI" class="chat-avatar">
@@ -1731,30 +1755,6 @@
                             <path d="M16 18L22 18M16 22L20 22" stroke="#1F73E6" stroke-width="2" stroke-linecap="round"/>
                             </svg>
                     </a>
-                </div>
-
-                <!-- Claude AI Security Verification Section -->
-                <div class="claude-verification-container" id="claudeVerificationContainer" style="display: none;">
-                    <div class="verification-header">
-                        <div class="verification-icon">
-                            <img src="/claude-seeklogo.svg" alt="Claude AI" style="width: 100%; height: 100%;">
-                        </div>
-                        <div class="verification-info">
-                            <div class="verification-title">Security Verification</div>
-                            <div class="verification-status" id="verificationStatus">Security being verified by Claude AI...</div>
-                        </div>
-                        <div class="verification-spinner" id="verificationSpinner">
-                            <div class="spinner"></div>
-                        </div>
-                    </div>
-                    <div class="verification-result" id="verificationResult" style="display: none;">
-                        <div class="verification-check">
-                            <img src="/claude-seeklogo.svg" alt="Claude AI Verified" style="width: 100%; height: 100%;">
-                        </div>
-                        <div class="verification-message" id="verificationMessage">
-                            Token security verified by Claude AI. No suspicious patterns detected.
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
