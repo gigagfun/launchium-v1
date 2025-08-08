@@ -588,11 +588,15 @@
             width: 24px;
             height: 24px;
             opacity: 0.9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .verification-icon svg {
+        .verification-icon img {
             width: 100%;
             height: 100%;
+            object-fit: contain;
         }
 
         .verification-info {
@@ -640,11 +644,15 @@
         .verification-check {
             width: 20px;
             height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .verification-check svg {
+        .verification-check img {
             width: 100%;
             height: 100%;
+            object-fit: contain;
         }
 
         .verification-message {
@@ -1729,11 +1737,7 @@
                 <div class="claude-verification-container" id="claudeVerificationContainer" style="display: none;">
                     <div class="verification-header">
                         <div class="verification-icon">
-                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="12" cy="12" r="10" fill="#FF6B35" stroke="#FF6B35" stroke-width="2"/>
-                                <path d="M8 12l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <circle cx="12" cy="12" r="6" fill="none" stroke="white" stroke-width="1" opacity="0.3"/>
-                            </svg>
+                            <img src="/claude-seeklogo.svg" alt="Claude AI" style="width: 100%; height: 100%;">
                         </div>
                         <div class="verification-info">
                             <div class="verification-title">Security Verification</div>
@@ -1745,10 +1749,7 @@
                     </div>
                     <div class="verification-result" id="verificationResult" style="display: none;">
                         <div class="verification-check">
-                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="12" cy="12" r="10" fill="#FF6B35"/>
-                                <path d="M8 12l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
+                            <img src="/claude-seeklogo.svg" alt="Claude AI Verified" style="width: 100%; height: 100%;">
                         </div>
                         <div class="verification-message" id="verificationMessage">
                             Token security verified by Claude AI. No suspicious patterns detected.
